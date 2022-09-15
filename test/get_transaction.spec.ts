@@ -109,7 +109,6 @@ describe('get_transaction', function () {
         // get scripts by collect consumer txhash inputs
         let scripts: ScriptMsg[] = []
         for (let i = 0; i < consumerTx.inputs.length; i++) {
-            console.log('deal script:',i)
             let txInfo = await rpcCLient.get_transaction(consumerTx.inputs[i].previous_output.tx_hash)
             let blockMsg = await rpcCLient.get_block(txInfo.tx_status.block_hash)
             scripts.push({
@@ -136,7 +135,6 @@ describe('get_transaction', function () {
         // query consumer cells
         for (let i = 0; i < scripts.length; i++) {
             let cells = await getCells(scripts[i].script)
-            console.log('cells:',cells)
             let notLivedCellNum = 0
             for (let j = 0; j < cells.objects.length; j++) {
                 // check get_cells  is lived ?
@@ -148,8 +146,8 @@ describe('get_transaction', function () {
                     notLivedCellNum++
                     console.log('status not lived,txHash:',cells.objects[j].out_point.tx_hash, ' idx:',cells.objects[j].out_point.index)
                 }
-                if (notLivedCellNum>5){
-                    console.log('not lived cells > 5')
+                if (notLivedCellNum>2){
+                    console.log('not lived cells > 2')
                     //todo test case failed ?
                     break
                 }

@@ -136,6 +136,7 @@ describe('get_transaction', function () {
         for (let i = 0; i < scripts.length; i++) {
             let cells = await getCells(scripts[i].script)
             let notLivedCellNum = 0
+            let LivedCellNum =0
             for (let j = 0; j < cells.objects.length; j++) {
                 // check get_cells  is lived ?
                 let status = await rpcCLient.get_live_cell({
@@ -151,6 +152,9 @@ describe('get_transaction', function () {
                     //todo test case failed ?
                     break
                 }
+                if(LivedCellNum>50){
+                    break
+                }
             }
         }
 
@@ -159,6 +163,7 @@ describe('get_transaction', function () {
         // query consumer tx ,should return null ?
         for (let i = 0; i < consumerTx.inputs.length; i++) {
             let result = await getTransaction(consumerTx.inputs[i].previous_output.tx_hash)
+            //todo check result should null?
             console.log('result :',result)
         }
 

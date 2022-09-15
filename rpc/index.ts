@@ -16,7 +16,7 @@ const DefaultTerminator: Terminator = () => {
 //   hash_type: "type",
 //   args: "0x2760d76d61cafcfc1a83d9d3d6b70c36fa9d4b1a"
 // };
-interface ScriptMsg{
+export interface ScriptMsg{
   script:ScriptObject
   block_number:string
 }
@@ -70,7 +70,7 @@ export async function waitScriptsUpdate(block_num:BI,ckbLightClient:string=ckbLi
     let lower_block_num = BI.from("0xffffffffff")
     for (let i = 0; i < res.length; i++) {
       if(lower_block_num.gt(res[i].block_number)){
-        lower_block_num = res[i].block_number;
+        lower_block_num = BI.from(res[i].block_number);
       }
     }
     if (block_num.lte(lower_block_num)){

@@ -5,6 +5,6 @@
         "test/runners/mocha/init.js"
     ],
     "spec": [
-        "test/*.spec.ts"
+        "test/get_tip_header.spec.ts"
     ]
 }

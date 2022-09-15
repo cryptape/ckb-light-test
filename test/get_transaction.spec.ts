@@ -77,8 +77,6 @@ describe('get_transaction', function () {
 
     it("query txHash that output consumer",async ()=>{
 
-        await CkbClientNode.clean()
-        await CkbClientNode.start()
         //6696653
         let consumerTx:Transaction
 
@@ -111,7 +109,7 @@ describe('get_transaction', function () {
         // get scripts by collect consumer txhash inputs
         let scripts: ScriptMsg[] = []
         for (let i = 0; i < consumerTx.inputs.length; i++) {
-            console.log('deal script',i)
+            console.log('deal script:',i)
             let txInfo = await rpcCLient.get_transaction(consumerTx.inputs[i].previous_output.tx_hash)
             let blockMsg = await rpcCLient.get_block(txInfo.tx_status.block_hash)
             scripts.push({

@@ -37,4 +37,6 @@ jobs:
       - name: Run tests
         id: runtest
         run: |
-          npm install
+          npm install --save-dev mocha @types/mocha chai @types/chai
+
+

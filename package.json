@@ -34,7 +34,6 @@
     "typescript": "^3.7.3"
   },
   "scripts": {
-    "test.bak": "mocha --require ts-node/register --project ./tsconfig.json test/get_tip_header.spec.ts --reporter mochawesome",
-    "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha --require ts-node/register test/get_tip_header.spec.ts --reporter mochawesome"
+    "test": "mocha --require ts-node/register test/get_tip_header.spec.ts --reporter mochawesome"
   }
 }

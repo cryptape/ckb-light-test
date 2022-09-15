@@ -52,6 +52,6 @@
     "typescript": "^3.7.3"
   },
   "scripts": {
-    "test": "mocha --require ts-node/register test/get_tip_header.spec.ts --reporter mochawesome"
+    "test": "mocha --config test/runners/mocha/.mocharc.jsonc"
   }
 }

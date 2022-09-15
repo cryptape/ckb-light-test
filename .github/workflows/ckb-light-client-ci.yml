@@ -36,7 +36,7 @@ jobs:
       - name: prepare env
         id: runtest
         run: |
-          npm install
+          npm install --save-dev mocha @types/mocha chai @types/chai
           sh prepare.sh
       - name: run test
         id: ci-test

@@ -73,6 +73,8 @@ export async function waitScriptsUpdate(block_num:BI,ckbLightClient:string=ckbLi
         lower_block_num = BI.from(res[i].block_number);
       }
     }
+    console.log('[waitScriptsUpdate] current get script Height:',lower_block_num.toNumber(),",wait sync height:", block_num.toNumber(),)
+
     if (block_num.lte(lower_block_num)){
       return
     }
@@ -175,6 +177,13 @@ export async function getTransactions(
     objects: infos,
     lastCursor: cursor
   };
+}
+
+export async function fetch_header(block_hash:string, ckbLightClient:string=ckbLightClientRPC){
+  const res = await request(2, ckbLightClient, "get_cells_capacity", [block_hash]);
+  return {
+
+  }
 }
 
 // const get_cells_capacity_params = [

@@ -4,15 +4,11 @@ import {
     ACCOUNT_PRIVATE,
     CKB_RPC_INDEX_URL,
     CKB_RPC_URL,
-    CkbClientNode,
-    MINER_SCRIPT,
     rpcCLient
 } from "../config/config";
 import {BI} from "@ckb-lumos/lumos";
 import {generateAccountFromPrivateKey} from "../service/transfer";
-import {Output, Transaction} from "@ckb-lumos/base/lib/api";
-import {Hash, HexNumber} from "@ckb-lumos/base/lib/primitive";
-import {Block, CellWithStatus} from "@ckb-lumos/base";
+import {Transaction} from "@ckb-lumos/base/lib/api";
 import {Sleep} from "../service/util";
 
 describe('get_transaction', function () {
@@ -33,6 +29,7 @@ describe('get_transaction', function () {
 
         //get txHash
         let txs = await rpcCLient.get_block_by_number(header.number)
+        console.log('txs:', txs)
         if (txs == undefined) {
             expect("").to.be.equal("get_block_by_number failed ")
             return
@@ -75,98 +72,113 @@ describe('get_transaction', function () {
         expect(JSON.stringify(lightTransaction.transactions)).to.be.equal(JSON.stringify(ckbTransaction.transactions))
     })
 
-    it("query txHash that output consumer",async ()=>{
+    describe('consumer tx', function () {
+        //todo
+        let outPutTxs: string[]
+        let inputTxs: string[]
+        let scripts: ScriptMsg[]
+        let consumerTx: Transaction
+        before(async () => {
+            outPutTxs = []
+            inputTxs = []
+            scripts = []
+            let consumerBlockNumHex: string
 
-        //6696653
-        let consumerTx:Transaction
+            // find tx that input.length > 0
+            let tipHeader = await getTipHeader()
+            //todo replace 6696653 => tipHeader.number
+            for (let i = BI.from(tipHeader.number).sub(300).toNumber(); i > 0; i--) {
+                let tipHeader = await rpcCLient.get_block_by_number(BI.from(i).toHexString())
+                for (let k = 1; k < tipHeader.transactions.length; k++) {
+                    if (tipHeader.transactions[k].inputs.length == 0) {
+                        continue
+                    }
+                    console.log("current block num:", i, " tx idx :", k, " input length :" + tipHeader.transactions[k].inputs.length)
 
-        let consumerBlockNumHex:string
-        // collect consumer tx
-        let tipHeader = await getTipHeader()
+                    if (tipHeader.transactions[k].inputs.length > 0) {
 
-        //todo replace 6696653 => tipHeader.number
-        for (let i = BI.from(6696653).toNumber(); i > 0; i--) {
-            let tipHeader = await rpcCLient.get_block_by_number(BI.from(i).toHexString())
-            for (let k = 1; k < tipHeader.transactions.length; k++) {
-                if (tipHeader.transactions[k].inputs.length == 0){
-                    continue
+                        consumerTx = tipHeader.transactions[k]
+                        consumerBlockNumHex = BI.from(i).toHexString()
+                        break
+                    }
                 }
-                console.log("current block num:",i," tx idx :",k," input length :"+tipHeader.transactions[k].inputs.length)
-                if(tipHeader.transactions[k].inputs.length>0){
-                    consumerTx = tipHeader.transactions[k]
-                    consumerBlockNumHex = BI.from(i).toHexString()
+                if (consumerTx != undefined) {
                     break
                 }
             }
-            if (consumerTx != undefined){
-                break
+            expect(consumerTx).to.be.not.equal(undefined)
+
+            // get scripts by  tx hash inputs
+
+            for (let i = 0; i < consumerTx.inputs.length; i++) {
+                let txInfo = await rpcCLient.get_transaction(consumerTx.inputs[i].previous_output.tx_hash)
+                let blockMsg = await rpcCLient.get_block(txInfo.tx_status.block_hash)
+                //set script : tx.input'script
+                scripts.push({
+                    script: txInfo.transaction.outputs[BI.from(consumerTx.inputs[i].previous_output.index).toNumber()].lock,
+                    block_number: BI.from(blockMsg.header.number).sub(10).toHexString()
+                })
+                outPutTxs.push(consumerTx.inputs[i].previous_output.tx_hash)
             }
-        }
-        expect(consumerTx).to.be.not.equal(undefined)
+            inputTxs.push(consumerTx.hash)
+
+            for (let i = 0; i < scripts.length; i++) {
+                console.log(' set consumer input  idx:', i, ' script:', JSON.stringify(scripts[i]), ', consumer tx:', consumerTx.inputs[i].previous_output.tx_hash)
+            }
+
+            //set consumer script
+            await setScripts(scripts)
+
+            // wait light client update to tipHeader
+            await waitScriptsUpdate(BI.from(tipHeader.number).sub(300))
+
+            // wait 100s
+            await Sleep(60 * 1000)
+        })
+        it('query tx that script is consumer used output', async () => {
 
 
-
-        // get scripts by collect consumer txhash inputs
-        let scripts: ScriptMsg[] = []
-        for (let i = 0; i < consumerTx.inputs.length; i++) {
-            let txInfo = await rpcCLient.get_transaction(consumerTx.inputs[i].previous_output.tx_hash)
-            let blockMsg = await rpcCLient.get_block(txInfo.tx_status.block_hash)
-            scripts.push({
-                script:txInfo.transaction.outputs[BI.from(consumerTx.inputs[i].previous_output.index).toNumber()].lock,
-                block_number:BI.from(blockMsg.header.number).sub(1).toHexString()
+            let response = (await Promise.all(outPutTxs.map((hash) => {
+                console.log('hash:', hash)
+                return getTransaction(hash)
+            }, console.log)))
+            response.forEach((ret) => {
+                console.log("hash:", ret)
+                expect(ret).to.be.not.equal(null);
             })
-        }
-        for (let i = 0; i < scripts.length; i++) {
-            console.log(' set consumer input  idx:',i,' script:',JSON.stringify(scripts[i]),', consumer tx:',consumerTx.inputs[i].previous_output.tx_hash)
-        }
 
-        //set consumer script
-        await setScripts(scripts)
+        })
+        it('query tx that script is consumer used input', async () => {
 
-        // wait light node update to tipHeader
-        await waitScriptsUpdate(BI.from(tipHeader.number))
+            let scriptsList = await getScripts()
 
-        // wait 100s
-        await Sleep(100*1000)
-
-        let currentScripts = await getScripts()
-        console.log('current filter block num:',currentScripts[0].block_number,' consumer block number:',consumerBlockNumHex)
-        console.log('------------ query consumer\' cells -----------')
-        // query consumer cells
-        for (let i = 0; i < scripts.length; i++) {
-            let cells = await getCells(scripts[i].script)
-            let notLivedCellNum = 0
-            let LivedCellNum =0
-            for (let j = 0; j < cells.objects.length; j++) {
-                // check get_cells  is lived ?
-                let status = await rpcCLient.get_live_cell({
-                    tx_hash:cells.objects[j].out_point.tx_hash,
-                    index:cells.objects[j].out_point.index
-                },false)
-                if (status.status != "live"){
-                    notLivedCellNum++
-                    console.log('status not lived,txHash:',cells.objects[j].out_point.tx_hash, ' idx:',cells.objects[j].out_point.index)
-                }
-                if (notLivedCellNum>2){
-                    console.log('not lived cells > 2')
-                    //todo test case failed ?
-                    break
-                }
-                if(LivedCellNum>50){
-                    break
-                }
+            let resultList = scriptsList.map(
+                (script) => {
+                    return JSON.stringify(script.script)
+                }).filter(item => {
+                return consumerTx.outputs.map(output => {
+                    return JSON.stringify(output.lock)
+                }).some(data => item == data)
+            })
+            if (resultList.length > 0) {
+                console.log('contains script:', resultList)
+                let result = await getTransaction(consumerTx.hash)
+                expect(result).to.be.not.equal(null)
+                return
             }
-        }
 
+            let response = await Promise.all(inputTxs.map((hash) => {
+                console.log('hash:', hash)
+                return getTransaction(hash)
+            }, console.log))
 
-        console.log('--------query tx --------')
-        // query consumer tx ,should return null ?
-        for (let i = 0; i < consumerTx.inputs.length; i++) {
-            let result = await getTransaction(consumerTx.inputs[i].previous_output.tx_hash)
-            //todo check result should null?
-            console.log('result :',result)
-        }
+            response.forEach((hash) => {
+                console.log(hash)
+                expect(hash).to.be.equal(null);
+            })
 
-    })
+        })
+
+    });
 
 });

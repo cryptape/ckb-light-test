@@ -19,10 +19,10 @@ describe('get_header', function () {
         let script = generateAccountFromPrivateKey(ACCOUNT_PRIVATE).lockScript
         let cells = await getCells(script, "lock", CKB_RPC_INDEX_URL)
 
-        // set scripts
+        // set scripts :( account,cells[0].height -1 ) ,want to collected cells that not used ;
         await setScripts([{script: script, block_number: BI.from(cells.objects[0].block_number).sub(1).toHexString()}])
 
-        // wait script update
+        // wait update height > cells[0].block_number
         await waitScriptsUpdate(BI.from(cells.objects[0].block_number))
 
         // get collect  cells hash

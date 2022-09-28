@@ -54,6 +54,29 @@ describe('set_scripts', function () {
 
     })
 
+    it('set with too many scripts,should return null',async ()=>{
+
+        const  size = 33000;
+        let scripts:ScriptMsg[] = [];
+
+        for (let i = 0; i < size; i++) {
+            let arg = BI.from(i).toHexString()
+            if (arg.length%2 == 1){
+                arg = arg.replace('0x','0x0')
+            }
+            scripts.push({script:{
+                    code_hash:"0x8d9fac0888592070fa807f715340395511eed95f8d981afbc7b3c95ea5ff8081",
+                    hash_type:"type",
+                    args:arg
+                },block_number:"0x11"})
+        }
+        await setScripts(scripts)
+        const scriptsGet = await getScripts()
+        expect(scriptsGet.length).to.be.equal(size)
+
+
+    })
+
     it.skip('set with too many scripts, should return null, get_scripts can query all scripts in the set', async () => {
         //todo
         //返回null

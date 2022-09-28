@@ -113,11 +113,16 @@ describe('get_transaction', function () {
             for (let i = 0; i < consumerTx.inputs.length; i++) {
                 let txInfo = await rpcCLient.get_transaction(consumerTx.inputs[i].previous_output.tx_hash)
                 let blockMsg = await rpcCLient.get_block(txInfo.tx_status.block_hash)
-                //set script : tx.input'script
+                //set script : tx.input 'script
+                if (scripts.some(script=>JSON.stringify(script.script) == JSON.stringify(txInfo.transaction.outputs[BI.from(consumerTx.inputs[i].previous_output.index).toNumber()].lock))){
+                    // provider not exist same script
+                    continue
+                }
                 scripts.push({
                     script: txInfo.transaction.outputs[BI.from(consumerTx.inputs[i].previous_output.index).toNumber()].lock,
                     block_number: BI.from(blockMsg.header.number).sub(10).toHexString()
                 })
+
                 outPutTxs.push(consumerTx.inputs[i].previous_output.tx_hash)
             }
             inputTxs.push(consumerTx.hash)
@@ -168,7 +173,7 @@ describe('get_transaction', function () {
             }
 
             let response = await Promise.all(inputTxs.map((hash) => {
-                console.log('hash:', hash)
+                console.log('used  output in generate hash:', hash)
                 return getTransaction(hash)
             }, console.log))
 

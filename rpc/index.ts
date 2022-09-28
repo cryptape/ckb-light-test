@@ -180,7 +180,7 @@ export async function getTransactions(
 }
 
 export async function fetch_header(block_hash:string, ckbLightClient:string=ckbLightClientRPC){
-  const res = await request(2, ckbLightClient, "get_cells_capacity", [block_hash]);
+  const res = await request(2, ckbLightClient, "fetch_header", [block_hash]);
   return {
 
   }

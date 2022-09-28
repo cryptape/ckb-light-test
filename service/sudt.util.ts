@@ -1,6 +1,6 @@
 import {BIish} from "@ckb-lumos/bi";
 import {BI, commons, hd, helpers, Indexer, RPC} from "@ckb-lumos/lumos";
-import {ACCOUNT_PRIVATE, CKB_RPC_INDEX_URL, CKB_RPC_URL, FEE} from "../config/config";
+import {ACCOUNT_PRIVATE, CKB_RPC_INDEX_URL, CKB_RPC_URL, FEE, FeeRate} from "../config/config";
 import {AGGRON4, generateAccountFromPrivateKey} from "./transfer";
 import {sudt} from "@ckb-lumos/common-scripts";
 import {utils} from "@ckb-lumos/base";
@@ -22,6 +22,8 @@ export function getTokenScriptType(privateKey:string){
     }
 }
 
+
+
 export async function issueToken(privateKey: string, amount: BIish): Promise<string> {
 
     let acc = generateAccountFromPrivateKey(privateKey)
@@ -36,24 +38,10 @@ export async function issueToken(privateKey: string, amount: BIish): Promise<str
             config: AGGRON4
         }
     );
-    txSkeleton = subFee(txSkeleton)
+    txSkeleton = await commons.common.payFee(txSkeleton,[acc.address],FeeRate.NORMAL)
     txSkeleton = commons.common.prepareSigningEntries(txSkeleton);
     const message = txSkeleton.get("signingEntries").get(0)?.message;
     const Sig = hd.key.signRecoverable(message!, ACCOUNT_PRIVATE);
     let tx1 = helpers.sealTransaction(txSkeleton, [Sig]);
     return await rpc.send_transaction(tx1, "passthrough");
-}
-
-
-
-
-function subFee(txSkeleton: TransactionSkeletonType): TransactionSkeletonType {
-    txSkeleton.get("outputs").map(function (outPut, idx) {
-        if (outPut.cell_output.type == null) {
-            outPut.cell_output.capacity = BI.from(outPut.cell_output.capacity).sub(BI.from(FEE)).toHexString()
-            txSkeleton.get("outputs").set(idx, outPut)
-            return txSkeleton
-        }
-    })
-    return txSkeleton
 }

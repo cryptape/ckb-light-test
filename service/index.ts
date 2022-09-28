@@ -120,6 +120,16 @@ const request = async (
     method: string,
     params?: any
 ): Promise<any> => {
+    if (RPC_DEBUG_SERVICE) {
+        console.log("curl --location --request POST '" + ckbIndexerUrl + "' \\\n" +
+            "--header 'Content-Type: application/json' \\\n" +
+            "--data-raw '{\n" +
+            "\t\"jsonrpc\":\"2.0\",\n" +
+            "\t\"method\":\"" + method + "\",\n" +
+            "\t\"params\":[" + JSON.stringify(params) + "],\n" +
+            "\t\"id\":64\n" +
+            "}'")
+    }
     const res = await fetch(ckbIndexerUrl, {
         method: "POST",
         body: JSON.stringify({
@@ -132,16 +142,6 @@ const request = async (
             "Content-Type": "application/json"
         }
     });
-    if (RPC_DEBUG_SERVICE) {
-        console.log("curl --location --request POST '" + ckbIndexerUrl + "' \\\n" +
-            "--header 'Content-Type: application/json' \\\n" +
-            "--data-raw '{\n" +
-            "\t\"jsonrpc\":\"2.0\",\n" +
-            "\t\"method\":\"" + method + "\",\n" +
-            "\t\"params\":[" + JSON.stringify(params) + "],\n" +
-            "\t\"id\":64\n" +
-            "}'")
-    }
     if (res.status !== 200) {
         throw new Error(`light client request failed with HTTP code ${res.status}`);
     }

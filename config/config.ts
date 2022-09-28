@@ -3,10 +3,11 @@ import {LightClient} from "../service/node";
 
 
 const CKB_LIGHT_CLIENT_PATH = "startBlockchain/ckbLightClient/ckb-light-client"
-const RPC_DEBUG = true
+const RPC_DEBUG = false
 const CKB_RPC_URL = "https://testnet.ckb.dev";
 const CKB_RPC_INDEX_URL = "https://testnet.ckb.dev/indexer";
 const CKB_LIGHT_RPC_URL = "http://localhost:9000";
+
 export enum FeeRate {
     SLOW = 1000,
     NORMAL = 100000,

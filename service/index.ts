@@ -126,7 +126,7 @@ const request = async (
             "--data-raw '{\n" +
             "\t\"jsonrpc\":\"2.0\",\n" +
             "\t\"method\":\"" + method + "\",\n" +
-            "\t\"params\":[" + JSON.stringify(params) + "],\n" +
+            "\t\"params\":" + JSON.stringify(params) + ",\n" +
             "\t\"id\":64\n" +
             "}'")
     }

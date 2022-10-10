@@ -13,9 +13,11 @@ import {
     toolkit,
     WitnessArgs,
 } from "@ckb-lumos/lumos";
-import {values} from "@ckb-lumos/base";
-import {ANY_ONE_CAN_PAY, ANY_ONE_CAN_PAY_TYPE_ID, FEE, FeeRate} from "../config/config";
+import {OutPoint, Transaction, values} from "@ckb-lumos/base";
+import {ANY_ONE_CAN_PAY, ANY_ONE_CAN_PAY_TYPE_ID, CKB_LIGHT_RPC_URL, FEE, FeeRate, rpcCLient} from "../config/config";
 import {DepType} from "@ckb-lumos/base/lib/api";
+import {ScriptMsg, sendTransaction, setScripts, waitScriptsUpdate} from "../rpc";
+import {fetchTransactionUntilFetched} from "./txService";
 
 const { ScriptValue } = values;
 
@@ -25,7 +27,7 @@ export const { AGGRON4 } = config.predefined;
 
 const CKB_RPC_URL = "https://testnet.ckb.dev/rpc";
 const CKB_INDEXER_URL = "https://testnet.ckb.dev/indexer";
-const rpc = new RPC(CKB_RPC_URL);
+const defaultRpc = new RPC(CKB_RPC_URL);
 const indexer = new Indexer(CKB_INDEXER_URL, CKB_RPC_URL);
 
 type Account = {
@@ -75,6 +77,8 @@ interface Options {
     privKey: string;
     inputCells?: Cell[];
     deps?:[];
+    lightMode?:boolean;
+    lightNotInstallCellMode?:boolean;
 }
 
 function getOutPutCell(to:string,amount: string,data:string):Cell{
@@ -186,13 +190,118 @@ export async function send_tx_with_input(options:Options):Promise<string>{
     const message = txSkeleton.get("signingEntries").get(0)?.message;
     const Sig = hd.key.signRecoverable(message!, options.privKey);
     const tx = helpers.sealTransaction(txSkeleton, [Sig]);
-    const hash = await rpc.send_transaction(tx, "passthrough");
+    const hash = await defaultRpc.send_transaction(tx, "passthrough");
     console.log("The transaction hash is", hash);
 
     return hash;
 }
 
 
+export async function send_tx_options(options:Options):Promise<string>{
+    let txSkeleton = helpers.TransactionSkeleton({});
+    const fromScript = helpers.parseAddress(options.from, { config: AGGRON4 });
+
+
+    const neededCap = options.outputCells.reduce((total, cell) => {
+        return total.add(BI.from(cell.cell_output.capacity))
+    }, BI.from(0))
+    const inputCap = options.inputCells.reduce((total, cell) => {
+        return total.add(BI.from(cell.cell_output.capacity))
+    }, BI.from(0))
+
+    if (inputCap.lt( neededCap.toNumber())) {
+        throw new Error("Not enough CKB"+"input:"+inputCap.toNumber()+",output:"+neededCap.toNumber());
+    }
+
+    if(inputCap.sub(neededCap).sub(FeeRate.NORMAL).gt(BI.from('0'))) {
+        const changeOutput: Cell = {
+            cell_output: {
+                capacity: inputCap.sub(neededCap).sub(FeeRate.NORMAL).toHexString(),
+                lock: fromScript,
+            },
+            data: "0x",
+        };
+        console.log('gen out put extra value ')
+        txSkeleton = txSkeleton.update("outputs", (outputs) => outputs.push(changeOutput));
+    }
+
+    txSkeleton = txSkeleton.update("outputs", (outputs) => outputs.push(...options.outputCells));
+    txSkeleton = txSkeleton.update("inputs", (inputs) => inputs.push(...options.inputCells));
+    txSkeleton = txSkeleton.update("cellDeps", (cellDeps) =>
+        cellDeps.push(...[
+            {
+                out_point: {
+                    tx_hash: AGGRON4.SCRIPTS.SECP256K1_BLAKE160.TX_HASH,
+                    index: AGGRON4.SCRIPTS.SECP256K1_BLAKE160.INDEX,
+                },
+                dep_type: AGGRON4.SCRIPTS.SECP256K1_BLAKE160.DEP_TYPE,
+            },{
+                out_point: {
+                    tx_hash: AGGRON4.SCRIPTS.SUDT.TX_HASH,
+                    index: AGGRON4.SCRIPTS.SUDT.INDEX,
+                },
+                dep_type: AGGRON4.SCRIPTS.SUDT.DEP_TYPE,
+            },
+            {
+                out_point: {
+                    tx_hash: ANY_ONE_CAN_PAY_TYPE_ID.TX_HASH,
+                    index: ANY_ONE_CAN_PAY_TYPE_ID.INDEX,
+                },
+                dep_type:  AGGRON4.SCRIPTS.SUDT.DEP_TYPE,
+            }
+        ])
+    );
+    txSkeleton = txSkeleton.update("cellDeps",(cellDeps)=> cellDeps.push(...options.deps));
+
+    const firstIndex = txSkeleton
+        .get("inputs")
+        .findIndex((input) =>
+            new ScriptValue(input.cell_output.lock, { validate: false }).equals(
+                new ScriptValue(fromScript, { validate: false })
+            )
+        );
+    if (firstIndex !== -1) {
+        while (firstIndex >= txSkeleton.get("witnesses").size) {
+            txSkeleton = txSkeleton.update("witnesses", (witnesses) => witnesses.push("0x"));
+        }
+        let witness: string = txSkeleton.get("witnesses").get(firstIndex)!;
+        const newWitnessArgs: WitnessArgs = {
+            /* 65-byte zeros in hex */
+            lock:
+                "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        };
+        if (witness !== "0x") {
+            const witnessArgs = new core.WitnessArgs(new toolkit.Reader(witness));
+            const lock = witnessArgs.getLock();
+            if (lock.hasValue() && new toolkit.Reader(lock.value().raw()).serializeJson() !== newWitnessArgs.lock) {
+                throw new Error("Lock field in first witness is set aside for signature!");
+            }
+            const inputType = witnessArgs.getInputType();
+            if (inputType.hasValue()) {
+                newWitnessArgs.input_type = new toolkit.Reader(inputType.value().raw()).serializeJson();
+            }
+            const outputType = witnessArgs.getOutputType();
+            if (outputType.hasValue()) {
+                newWitnessArgs.output_type = new toolkit.Reader(outputType.value().raw()).serializeJson();
+            }
+        }
+        witness = new toolkit.Reader(
+            core.SerializeWitnessArgs(toolkit.normalizers.NormalizeWitnessArgs(newWitnessArgs))
+        ).serializeJson();
+        txSkeleton = txSkeleton.update("witnesses", (witnesses) => witnesses.set(firstIndex, witness));
+    }
+
+
+    txSkeleton = commons.common.prepareSigningEntries(txSkeleton);
+    const message = txSkeleton.get("signingEntries").get(0)?.message;
+    const Sig = hd.key.signRecoverable(message!, options.privKey);
+    const tx = helpers.sealTransaction(txSkeleton, [Sig]);
+    const hash = await defaultRpc.send_transaction(tx, "passthrough");
+    console.log("The transaction hash is", hash);
+
+    return hash;
+
+}
 
 export async function send_tx(options: Options): Promise<string> {
     let txSkeleton = helpers.TransactionSkeleton({});
@@ -220,16 +329,19 @@ export async function send_tx(options: Options): Promise<string> {
         throw new Error("Not enough CKB");
     }
 
-    const changeOutput: Cell = {
-        cell_output: {
-            capacity: collectedSum.sub(neededCapacity).sub(FeeRate.NORMAL).toHexString(),
-            lock: fromScript,
-        },
-        data: "0x",
-    };
-
+    if(collectedSum.sub(neededCapacity).sub(FeeRate.NORMAL).gt(BI.from('0'))) {
+        const changeOutput: Cell = {
+            cell_output: {
+                capacity: collectedSum.sub(neededCapacity).sub(FeeRate.NORMAL).toHexString(),
+                lock: fromScript,
+            },
+            data: "0x",
+        };
+        console.log('gen out put extra value ')
+        txSkeleton = txSkeleton.update("outputs", (outputs) => outputs.push(changeOutput));
+    }
+    txSkeleton = txSkeleton.update("outputs", (outputs) => outputs.push(...options.outputCells));
     txSkeleton = txSkeleton.update("inputs", (inputs) => inputs.push(...collected));
-    txSkeleton = txSkeleton.update("outputs", (outputs) => outputs.push(...options.outputCells, changeOutput));
     txSkeleton = txSkeleton.update("cellDeps", (cellDeps) =>
         cellDeps.push(...[
             {
@@ -238,20 +350,21 @@ export async function send_tx(options: Options): Promise<string> {
                 index: AGGRON4.SCRIPTS.SECP256K1_BLAKE160.INDEX,
             },
             dep_type: AGGRON4.SCRIPTS.SECP256K1_BLAKE160.DEP_TYPE,
-        },{
+        }
+        ,{
             out_point: {
                 tx_hash: AGGRON4.SCRIPTS.SUDT.TX_HASH,
                 index: AGGRON4.SCRIPTS.SUDT.INDEX,
             },
             dep_type: AGGRON4.SCRIPTS.SUDT.DEP_TYPE,
         },
-            {
-                out_point: {
-                    tx_hash: ANY_ONE_CAN_PAY_TYPE_ID.TX_HASH,
-                    index: ANY_ONE_CAN_PAY_TYPE_ID.INDEX,
-                },
-                dep_type:  AGGRON4.SCRIPTS.SUDT.DEP_TYPE,
-            }
+            // {
+            //     out_point: {
+            //         tx_hash: ANY_ONE_CAN_PAY_TYPE_ID.TX_HASH,
+            //         index: ANY_ONE_CAN_PAY_TYPE_ID.INDEX,
+            //     },
+            //     dep_type:  AGGRON4.SCRIPTS.SUDT.DEP_TYPE,
+            // }
         //     {
         //     out_point: {
         //         tx_hash: ANY_ONE_CAN_PAY.TX_HASH,
@@ -301,13 +414,81 @@ export async function send_tx(options: Options): Promise<string> {
         txSkeleton = txSkeleton.update("witnesses", (witnesses) => witnesses.set(firstIndex, witness));
     }
 
+
     txSkeleton = commons.common.prepareSigningEntries(txSkeleton);
     const message = txSkeleton.get("signingEntries").get(0)?.message;
     const Sig = hd.key.signRecoverable(message!, options.privKey);
     const tx = helpers.sealTransaction(txSkeleton, [Sig]);
-    const hash = await rpc.send_transaction(tx, "passthrough");
+
+    if( options.lightMode == true){
+        if(options.lightNotInstallCellMode == null||options.lightNotInstallCellMode == false){
+            await installTxCells(tx)
+        }
+        const hash = await sendTransaction(tx,CKB_LIGHT_RPC_URL)
+        console.log("The CKB_LIGHT_RPC_URL transaction hash is", hash);
+        return hash;
+    }
+    const hash = await defaultRpc.send_transaction(tx, "passthrough");
     console.log("The transaction hash is", hash);
 
     return hash;
 
+}
+
+
+async function installTxCells(tx:Transaction) {
+
+    // install dep hash
+    for (let i = 0; i < tx.cell_deps.length; i++) {
+        let dep = tx.cell_deps[i].out_point
+        await fetchTransactionUntilFetched(dep.tx_hash,CKB_LIGHT_RPC_URL,100)
+    }
+    // install cell
+    let scrips:ScriptMsg[] = []
+    let minBlockNum = BI.from("0xffffffffffff")
+    let heightBlockNum = BI.from("0x0")
+
+    for (let i = 0; i < tx.inputs.length; i++) {
+
+        // get input scripts
+
+        scrips.push({
+            script:await getScriptByOutPut(tx.inputs[i].previous_output),
+            block_number:"0x1"
+        })
+        // get min block num
+        let blockNum = await getBlockNumByTxHash(tx.inputs[i].previous_output.tx_hash)
+        if(minBlockNum.gt(blockNum)){
+            minBlockNum = blockNum
+        }
+        // get height block num
+        if(heightBlockNum.lt(blockNum)){
+            heightBlockNum = blockNum
+        }
+    }
+    for (let i = 0; i <scrips.length ; i++) {
+        scrips[i].block_number = minBlockNum.sub(1).toHexString()
+    }
+    await setScripts(scrips)
+    await waitScriptsUpdate(heightBlockNum,CKB_LIGHT_RPC_URL)
+
+}
+
+//Error: transaction.outputs[1].capacity must be a hex integer!
+async function getScriptByOutPut(previous_output: OutPoint):Promise<Script> {
+    let cell = await rpcCLient.get_live_cell(previous_output,false)
+    console.log('cell:',cell)
+    if (cell.status == 'unknown'){
+        throw Error("cell is died")
+    }
+    return cell.cell.output.lock;
+}
+
+export async function getBlockNumByTxHash(tx_hash: string):Promise<BI> {
+    let txInfo = await rpcCLient.get_transaction(tx_hash)
+    if (txInfo.tx_status.block_hash == null){
+        throw Error("block_hash is null,txHash:"+tx_hash)
+    }
+    let blockInfo = await rpcCLient.get_block(txInfo.tx_status.block_hash)
+    return BI.from(blockInfo.header.number)
 }

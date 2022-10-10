@@ -1,8 +1,10 @@
-import { Cell } from "@ckb-lumos/base";
+import {Cell, HexNumber, OutPoint} from "@ckb-lumos/base";
 import { request } from "../service/index";
-import { IndexerTransaction, Terminator } from "../service/type";
-import {CKB_LIGHT_RPC_URL} from "../config/config";
-import {BI} from "@ckb-lumos/lumos";
+import {IndexerTransaction, IndexerTransactionList, SearchKeyFilter, Terminator} from "../service/type";
+import {CKB_LIGHT_RPC_URL, indexer, rpcCLient} from "../config/config";
+import {BI, Indexer} from "@ckb-lumos/lumos";
+import {Hexadecimal, HexString} from "@ckb-lumos/base/lib/primitive";
+import {fetchTransactionUntilFetched} from "../service/txService";
 
 const ckbLightClientRPC = CKB_LIGHT_RPC_URL;
 
@@ -21,10 +23,43 @@ export interface ScriptMsg{
   block_number:string
 }
 
-interface ScriptObject {
+
+
+export interface ScriptObject {
   code_hash: string;
   hash_type: string|null|undefined;
   args: string|null|undefined;
+}
+//{
+//       script,
+//       script_type: script_type
+//     },
+//     "asc",
+//     "0x6400000",
+export interface SearchKey{
+  script:ScriptObject,
+  script_type:"lock"|"type"
+  filter?:SearchFilter
+  with_data?:boolean
+}
+export interface GetTransactionsSearchKey{
+  script:ScriptObject,
+  script_type:"lock"|"type"
+  filter?:SearchFilter
+  group_by_transaction?:boolean
+}
+export interface SearchFilter{
+  script?:ScriptObject
+  script_len_range?:HexString[]
+  output_data_len_range?:HexString[]
+  output_capacity_range?:HexString[]
+  block_range?:HexString[]
+}
+export interface GetCellsRequest{
+  search_key:SearchKey
+  order:"asc"|"desc"
+  limit:HexString
+  after_cursor?:HexString
 }
 
 /**
@@ -94,6 +129,54 @@ export async function getCellsCapacity(script?:ScriptObject,ckbLightClient:strin
   return res
 }
 
+//[
+//         {
+//             "script": {
+//                 "code_hash": "0x58c5f491aba6d61678b7cf7edf4910b1f5e00ec0cde2f42e0abb4fd9aff25a63",
+//                 "hash_type": "type",
+//                 "args": "0x2a49720e721553d0614dff29454ee4e1f07d0707"
+//             },
+//             "script_type": "lock",
+//             "filter": {
+//                 "script_len_range": ["0x0", "0x1"]
+//             }
+//         },
+//         "asc",
+//         "0x64"
+//     ]
+
+
+
+export async function getCellsRequest(getCellsReq:GetCellsRequest,ckbLightClient:string=ckbLightClientRPC){
+  const infos: Cell[] = [];
+  let request1 = [
+    getCellsReq.search_key,getCellsReq.order,getCellsReq.limit];
+  if (getCellsReq.after_cursor !== undefined){
+    request1.push(getCellsReq.after_cursor)
+  }
+  const res = await request(2, ckbLightClient, "get_cells", request1);
+  const liveCells = res.objects;
+  let  index = 0;
+  for (const liveCell of liveCells) {
+    const cell: Cell = {
+      cell_output: liveCell.output,
+      data: liveCell.output_data,
+      out_point: liveCell.out_point,
+      block_number: liveCell.block_number
+    };
+    // const { ok , push } = DefaultTerminator(index, cell);
+    // if (push) {
+    infos.push(cell);
+    // }
+    index= index+1;
+  }
+
+  return {
+    objects: infos,
+    lastCursor: index
+  };
+}
+
 /**
  * @description: get_cells
  */
@@ -133,39 +216,23 @@ export async function getCells(script?: ScriptObject,script_type="lock",ckbLight
   //   return res;
 }
 
+
+
 /**
  * @description: get_transactions
  */
-export async function getTransactions(
-  script: ScriptObject,
-  lastCursor?: string
-) {
-  let infos: IndexerTransaction[] = [];
-  let cursor: string | undefined;
-  const sizeLimit = 500;
-  const order = "desc"; //desc ｜ asc
-  // 0x1e0 480
-  const get_transactions_params: any = [
-    {
-      script,
-      script_type: "lock",
-      filter: script
-      // group_by_transaction: true
-    },
-    order,
-    "0x1e0"
-  ];
-  if (lastCursor) {
-    get_transactions_params.push({ after_cursor: lastCursor });
-  }
 
-  const res = await request(
-    2,
-    ckbLightClientRPC,
-    "get_transactions",
-    get_transactions_params
-  );
+
+export async function getTransactions(searchKey:GetTransactionsSearchKey,searchKeyFilter: SearchKeyFilter = {},url:string=ckbLightClientRPC,
+): Promise<IndexerTransactionList> {
+
+  let infos: IndexerTransaction[] = [];
+  let cursor: string | undefined = searchKeyFilter.lastCursor;
+  const sizeLimit = searchKeyFilter.sizeLimit || 100;
+  const order = searchKeyFilter.order || "asc";
   while (true) {
+    const params = [searchKey, order, `0x${sizeLimit.toString(16)}`, cursor];
+    const res = await request(2,url,"get_transactions", params);
     const txs = res.objects;
     cursor = res.last_cursor as string;
     infos = infos.concat(txs);
@@ -175,12 +242,21 @@ export async function getTransactions(
   }
   return {
     objects: infos,
-    lastCursor: cursor
+    lastCursor: cursor,
   };
 }
 
 export async function fetch_header(block_hash:string, ckbLightClient:string=ckbLightClientRPC){
   const res = await request(2, ckbLightClient, "fetch_header", [block_hash]);
+  return {
+
+  }
+}
+
+
+export async function fetch_transaction(tx_hash:string, ckbLightClient:string=ckbLightClientRPC){
+  const res = await request(2, ckbLightClient, "fetch_transaction", [tx_hash]);
+
   return {
 
   }

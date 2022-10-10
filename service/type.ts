@@ -74,6 +74,7 @@ export declare type Terminator = (
 export type HexNum = string;
 export type IOType = "input" | "output" | "both";
 export type Bytes32 = string;
+
 export type IndexerTransaction = {
   block_number: HexNum;
   io_index: HexNum;

@@ -137,7 +137,7 @@ describe('get_transaction', function () {
             // wait light client update to tipHeader
             await waitScriptsUpdate(BI.from(tipHeader.number).sub(300))
 
-            // wait 100s
+            // wait 60s
             await Sleep(60 * 1000)
         })
         it('query tx that script is consumer used output', async () => {

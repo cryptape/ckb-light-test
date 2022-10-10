@@ -25,6 +25,7 @@ const script = helpers.parseAddress(
 );
 const MINER_SCRIPT = helpers.parseAddress("ckt1qyqvjdmh4re8t7mfjr0v0z27lwwjqu384vhs6lfftr")
 const MINER_SCRIPT2 = helpers.parseAddress("ckt1qyq8ph2ywxpvkl5l0rcsugcnwcfswqpqngeqqmfuwq")
+const MINER_SCRIPT3 = helpers.parseAddress("ckt1qyqd5eyygtdmwdr7ge736zw6z0ju6wsw7rssu8fcve")
 const CkbClientNode = new LightClient(CKB_LIGHT_CLIENT_PATH)
 
 const deprecatedAddr = helpers.generateAddress(script);
@@ -71,7 +72,9 @@ export {
     CkbClientNode,
     MINER_SCRIPT,
     MINER_SCRIPT2,
+    MINER_SCRIPT3,
     ANY_ONE_CAN_PAY,
     ACCOUNT_PRIVATE2,
+
     ANY_ONE_CAN_PAY_TYPE_ID
 }

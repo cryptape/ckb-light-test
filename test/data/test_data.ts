@@ -1,6 +1,5 @@
 import {rpcCLient} from "../../config/config";
 import {BI} from "@ckb-lumos/lumos";
-import {FilterOption} from "../todo/get_transactions.spec";
 import {Script} from "@ckb-lumos/base/lib/api";
 import * as fs from "fs";
 
@@ -163,6 +162,13 @@ export function getTestDataByFile(path: string): test_data {
         jp.script_data1_total)
 }
 
+
+export interface FilterOption {
+    begin_block_num: BI,
+    end_block_num: BI,
+    filter_hash_type: "type" | "data" | "data1" | undefined,
+    script_type: "lock" | "type" | undefined
+}
 
 async function getTransactionByFilter(filterOption: FilterOption): Promise<string[]> {
 

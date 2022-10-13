@@ -8,5 +8,5 @@ echo "prepare ckbLightClient finish"
 cd ../../
 git clone https://github.com/TheWaWaR/ckb-cli-light-client.git
 cd ckb-cli-light-client
-cargo +nightly build
+cargo build
 echo "prepare ckb-cli-light-client finish"

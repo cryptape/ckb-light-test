@@ -1,8 +1,8 @@
-import {getTestDataByFile, test_data} from "./test_data";
-import {CKB_LIGHT_RPC_URL, CKB_RPC_INDEX_URL, script} from "../../config/config";
+import {getTestDataByFile} from "./test_data";
+import { CKB_RPC_INDEX_URL} from "../../config/config";
 import {BI} from "@ckb-lumos/lumos";
 import {getTransactions, setScripts, waitScriptsUpdate} from "../../rpc";
-import {getTransactionList, getTransactionsLength} from "../../service/txService";
+import {getTransactionList} from "../../service/txService";
 import * as fs from "fs";
 import {expect} from "chai";
 

@@ -39,9 +39,9 @@ jobs:
           npm install --save-dev mocha @types/mocha chai @types/chai
           sh prepare.sh
       - name: run test
-        id: ci-test
+        id: test-cli
         run: |
-          npm run test
+          npm run test-cli
 
       - name: Publish reports
         if: always()

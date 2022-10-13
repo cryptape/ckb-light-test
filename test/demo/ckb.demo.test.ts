@@ -1,5 +1,7 @@
-import {getCellsRequest} from "../../rpc";
-import {CKB_RPC_INDEX_URL} from "../../config/config";
+import {getCellsCapacity, getCellsRequest, getScripts, setScripts, waitScriptsUpdate} from "../../rpc";
+import {CKB_LIGHT_RPC_URL, CKB_RPC_INDEX_URL, MINER_SCRIPT3, rpcCLient} from "../../config/config";
+import {BI} from "@ckb-lumos/lumos";
+import {getTransactionsLength} from "../scenes.test";
 
 describe('demo', function () {
 
@@ -23,7 +25,28 @@ describe('demo', function () {
         console.log('end')
     })
 
-});
+    it('setScript ',async ()=>{
 
+        // await setScripts([{
+        //     script:MINER_SCRIPT3,
+        //     block_number:"0x0"
+        // }])
+        // for (let i = 0; i < 1000000000; i++) {
+        //
+        // }
+
+        await waitScriptsUpdate(BI.from(await rpcCLient.get_tip_block_number()))
+
+    })
+    it('get dd',async ()=>{
+        for (let i = 0; i < 10000000; i++) {
+            let capOfLight=  await getCellsCapacity(MINER_SCRIPT3)
+            let txLength = await getTransactionsLength(MINER_SCRIPT3,undefined,CKB_LIGHT_RPC_URL)
+            console.log('light cap:',BI.from(capOfLight).toNumber(),' length:',txLength)
+        }
+
+    })
+
+});
 
 // function getBlockNumByCell()

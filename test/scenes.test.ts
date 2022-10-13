@@ -137,7 +137,7 @@ describe('scenes', function () {
 
             })
 
-            it.skip('dep in install tx,return success', async () => {
+            it('dep in install tx,return success', async () => {
 
                 let acc = generateAccountFromPrivateKey(ACCOUNT_PRIVATE)
                 let cell = issueTokenCell(acc.address, 10000)
@@ -169,6 +169,7 @@ describe('scenes', function () {
                 // cost tx: https://pudge.explorer.nervos.org/transaction/0x1850f997f867b6d3f1154444498a15e9fc4ce080215e34d0c41b33349bcc119a
                 {
                     script: MINER_SCRIPT3,
+                    script_type:"lock",
                     block_number: "0x0"
 
                     // block_number:"0x3e8"
@@ -314,7 +315,7 @@ describe('scenes', function () {
         });
         describe('get_transactions', function () {
 
-            it.skip('get exist script,should return data', async () => {
+            it('get exist script,should return data', async () => {
                 await waitScriptsUpdate(BI.from(16094))
                 let txs1 = await getTransactions({
                     script: MINER_SCRIPT3,
@@ -374,6 +375,7 @@ describe('scenes', function () {
                     // cost tx: https://pudge.explorer.nervos.org/transaction/0x1850f997f867b6d3f1154444498a15e9fc4ce080215e34d0c41b33349bcc119a
                     {
                         script: MINER_SCRIPT3,
+                        script_type:"lock",
                         block_number: "0x0"
                     }])
 
@@ -387,8 +389,8 @@ describe('scenes', function () {
                 })
             });
             describe('get_header', function () {
-                // todo wait something can check tx download
-                it.skip("the hash was collected before the query ", async () => {
+
+                it("the hash was collected before the query ", async () => {
                     // cost tx: https://pudge.explorer.nervos.org/transaction/0x1850f997f867b6d3f1154444498a15e9fc4ce080215e34d0c41b33349bcc119a
                     // block : 0x425bb10536e8625ec8caa0d0ad6fbfb71822541eff02ca684eb8661d395152ed
                     let response = await getHeader("0x425bb10536e8625ec8caa0d0ad6fbfb71822541eff02ca684eb8661d395152ed")
@@ -399,7 +401,7 @@ describe('scenes', function () {
 
             });
             describe('get_transaction', function () {
-                it.skip("the hash was collected before the query ", async () => {
+                it("the hash was collected before the query ", async () => {
                     // cost tx: https://pudge.explorer.nervos.org/transaction/0x1850f997f867b6d3f1154444498a15e9fc4ce080215e34d0c41b33349bcc119a
                     let response = await getTransaction("0x1850f997f867b6d3f1154444498a15e9fc4ce080215e34d0c41b33349bcc119a")
                     let responseOfCkb = await getTransaction("0x1850f997f867b6d3f1154444498a15e9fc4ce080215e34d0c41b33349bcc119a", CKB_RPC_URL)
@@ -522,7 +524,7 @@ async function getScriptsHeight(): Promise<BI> {
     let scriptObj = await getScripts()
     return BI.from(scriptObj[0].block_number)
 }
-async function getTransactionsLength(scriptObject: ScriptObject,lastCursor:string,url:string) {
+export async function getTransactionsLength(scriptObject: ScriptObject,lastCursor:string,url:string) {
     let totalSize = 0
     while (true){
         let result = await getTransactions({
@@ -539,9 +541,4 @@ async function getTransactionsLength(scriptObject: ScriptObject,lastCursor:strin
     }
     return totalSize
 }
-//363647736070365400
-//362895615076840060
-//366679184382069000
-//367817301294490750
-//369029380525581600
-//369089982653778300
+

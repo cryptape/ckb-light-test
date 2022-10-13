@@ -1,8 +1,9 @@
 import {config, helpers, Indexer, RPC} from "@ckb-lumos/lumos";
 import {LightClient} from "../service/node";
+import {LightClientCli} from "../service/light-cli";
 
-
-const CKB_LIGHT_CLIENT_PATH = "startBlockchain/ckbLightClient/ckb-light-client"
+const CKB_CLIENT_CLI_PATH = "tmp/ckb-cli-light-client"
+const CKB_LIGHT_CLIENT_PATH = "tmp/startBlockchain/ckbLightClient/ckb-light-client"
 const RPC_DEBUG = false
 const CKB_RPC_URL = "https://testnet.ckb.dev";
 const CKB_RPC_INDEX_URL = "https://testnet.ckb.dev/indexer";
@@ -36,7 +37,7 @@ const RPC_NETWORK = AGGRON4;
 const ACCOUNT_PRIVATE = "0xdd50cac37ec6dd12539a968c1a2cbedda75bd8724f7bcad486548eaabb87fc8b"
 const ACCOUNT_PRIVATE2 = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 const indexer = new Indexer(CKB_RPC_INDEX_URL, CKB_RPC_URL);
-
+const LightCli = new LightClientCli(CKB_CLIENT_CLI_PATH,CKB_LIGHT_RPC_URL)
 
 
 const ANY_ONE_CAN_PAY_DATA = {
@@ -75,6 +76,6 @@ export {
     MINER_SCRIPT3,
     ANY_ONE_CAN_PAY,
     ACCOUNT_PRIVATE2,
-
+    LightCli,
     ANY_ONE_CAN_PAY_TYPE_ID
 }

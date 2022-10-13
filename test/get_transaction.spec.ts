@@ -120,6 +120,7 @@ describe('get_transaction', function () {
                 }
                 scripts.push({
                     script: txInfo.transaction.outputs[BI.from(consumerTx.inputs[i].previous_output.index).toNumber()].lock,
+                    script_type:"lock",
                     block_number: BI.from(blockMsg.header.number).sub(10).toHexString()
                 })
 

@@ -82,6 +82,7 @@ export type IndexerTransaction = {
   hash: string;
   tx_index: HexNum;
   transaction: any;
+  tx_hash?:string
 };
 export interface IndexerTransactionList {
   lastCursor: string | undefined;

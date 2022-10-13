@@ -20,6 +20,7 @@ const DefaultTerminator: Terminator = () => {
 // };
 export interface ScriptMsg{
   script:ScriptObject
+  script_type:"lock"|"type"
   block_number:string
 }
 
@@ -151,12 +152,11 @@ export async function getCellsRequest(getCellsReq:GetCellsRequest,ckbLightClient
   const infos: Cell[] = [];
   let request1 = [
     getCellsReq.search_key,getCellsReq.order,getCellsReq.limit];
-  if (getCellsReq.after_cursor !== undefined){
+  if (getCellsReq.after_cursor != undefined){
     request1.push(getCellsReq.after_cursor)
   }
   const res = await request(2, ckbLightClient, "get_cells", request1);
   const liveCells = res.objects;
-  let  index = 0;
   for (const liveCell of liveCells) {
     const cell: Cell = {
       cell_output: liveCell.output,
@@ -168,12 +168,11 @@ export async function getCellsRequest(getCellsReq:GetCellsRequest,ckbLightClient
     // if (push) {
     infos.push(cell);
     // }
-    index= index+1;
   }
 
   return {
     objects: infos,
-    lastCursor: index
+    lastCursor: res.last_cursor
   };
 }
 
@@ -188,7 +187,7 @@ export async function getCells(script?: ScriptObject,script_type="lock",ckbLight
       script_type: script_type
     },
     "asc",
-    "0x6400000",
+    "0xfff",
   ]
   console.log('script:',script)
   const res = await request(2, ckbLightClient, "get_cells", get_cells_request);

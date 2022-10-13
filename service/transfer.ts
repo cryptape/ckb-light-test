@@ -454,6 +454,7 @@ async function installTxCells(tx:Transaction) {
 
         scrips.push({
             script:await getScriptByOutPut(tx.inputs[i].previous_output),
+            script_type:"lock",
             block_number:"0x1"
         })
         // get min block num

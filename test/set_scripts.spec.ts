@@ -31,13 +31,16 @@ describe('set_scripts', function () {
         // set dup scripts
         let result = await setScripts([{
             script: testScript,
+            script_type:"lock",
             block_number: "0xffffffffff"
         }, {
             script: testScript,
+            script_type:"lock",
             block_number: "0xffff"
         },
             {
                 script: testScript,
+                script_type:"lock",
                 block_number: "0xffffffff"
             },
 
@@ -68,7 +71,9 @@ describe('set_scripts', function () {
                     code_hash:"0x8d9fac0888592070fa807f715340395511eed95f8d981afbc7b3c95ea5ff8081",
                     hash_type:"type",
                     args:arg
-                },block_number:"0x11"})
+                },
+                script_type:"lock",
+                block_number:"0x11"})
         }
         await setScripts(scripts)
         const scriptsGet = await getScripts()
@@ -122,7 +127,7 @@ describe('set_scripts', function () {
                         code_hash: "0x1234",
                         hash_type: "type",
                         args: "0x2760d76d61cafcfc1a83d9d3d6b70c36fa9d4b1a"
-                    }, block_number: "0xffff"
+                    },script_type:"lock", block_number: "0xffff"
                 }])
             })
         });
@@ -133,7 +138,7 @@ describe('set_scripts', function () {
                         code_hash: "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce1",
                         hash_type: "type1asdasd`🦚\"？?\\\"\"\\\"\"\"\\u0000？？？?\"\\\\\"{?}{:?}`asda",
                         args: "0x2760d76d61cafcfc1a83d9d3d6b70c36fa9d4b1a"
-                    }, block_number: "0xffff"
+                    }, script_type:"lock",block_number: "0xffff"
                 }])
             })
 
@@ -143,7 +148,7 @@ describe('set_scripts', function () {
                         code_hash: "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce1",
                         hash_type: "",
                         args: "0x2760d76d61cafcfc1a83d9d3d6b70c36fa9d4b1a"
-                    }, block_number: "0xfff"
+                    },script_type:"lock", block_number: "0xfff"
                 }])
             })
 
@@ -154,7 +159,7 @@ describe('set_scripts', function () {
                         code_hash: "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce2",
                         hash_type: "data",
                         args: "0x2760d76d61cafcfc1a83d9d3d6b70c36fa9d4b1a"
-                    }, block_number: "0xffff"
+                    }, script_type:"lock",block_number: "0xffff"
                 }])
                 await getScripts()
                 //todo cell script
@@ -169,7 +174,7 @@ describe('set_scripts', function () {
                         code_hash: "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce2",
                         hash_type: "data1",
                         args: "0x2760d76d61cafcfc1a83d9d3d6b70c36fa9d4b1a"
-                    }, block_number: "0xffff"
+                    },script_type:"lock", block_number: "0xffff"
                 }])
                 await getScripts()
             })
@@ -181,7 +186,7 @@ describe('set_scripts', function () {
                         code_hash: "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce2",
                         hash_type: "type",
                         args: "0x2760d76d61cafcfc1a83d9d3d6b70c36fa9d4b1a"
-                    }, block_number: "0xffff"
+                    }, script_type:"lock",block_number: "0xffff"
                 }])
                 await getScripts()
             })
@@ -193,7 +198,7 @@ describe('set_scripts', function () {
                         code_hash: "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce2",
                         hash_type: undefined,
                         args: "0x2760d76d61cafcfc1a83d9d3d6b70c36fa9d4b1a"
-                    }, block_number: "0xffff"
+                    },script_type:"lock", block_number: "0xffff"
                 }])
             })
 
@@ -205,7 +210,7 @@ describe('set_scripts', function () {
                         code_hash: "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce2",
                         hash_type: "type",
                         args: undefined
-                    }, block_number: "0xffff"
+                    }, script_type:"lock",block_number: "0xffff"
                 }])
             })
 
@@ -215,7 +220,7 @@ describe('set_scripts', function () {
                         code_hash: "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce2",
                         hash_type: "type",
                         args: null
-                    }, block_number: "0xffff"
+                    }, script_type:"lock",block_number: "0xffff"
                 }])
             })
 
@@ -229,7 +234,7 @@ describe('set_scripts', function () {
                         code_hash: "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce2",
                         hash_type: "type",
                         args: argData
-                    }, block_number: "0xffff"
+                    },script_type:"lock", block_number: "0xffff"
                 }])
                 let result = await getScripts()
                 expect(result[0].script.args).to.be.equal(argData)
@@ -244,7 +249,7 @@ describe('set_scripts', function () {
                         code_hash: "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8",
                         hash_type: "type",
                         args: "0x2760d76d61cafcfc1a83d9d3d6b70c36fa9d4b1a"
-                    }, block_number: "0xffffffffffffffff"
+                    },script_type:"lock", block_number: "0xffffffffffffffff"
                 }])
 
             });
@@ -260,7 +265,7 @@ describe('set_scripts', function () {
                         code_hash: "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8",
                         hash_type: "type",
                         args: "0x2760d76d61cafcfc1a83d9d3d6b70c36fa9d4b1a"
-                    }, block_number: setHeight.toHexString()
+                    }, script_type:"lock",block_number: setHeight.toHexString()
                 }])
                 expect(result).to.be.equal(null)
 
@@ -280,7 +285,7 @@ describe('set_scripts', function () {
                         code_hash: "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8",
                         hash_type: "type",
                         args: "0x2760d76d61cafcfc1a83d9d3d6b70c36fa9d4b1a"
-                    }, block_number: setHeight.toHexString()
+                    },script_type:"lock", block_number: setHeight.toHexString()
                 }])
                 expect(result).to.be.equal(null)
 

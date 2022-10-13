@@ -20,7 +20,7 @@ describe('get_header', function () {
         let cells = await getCells(script, "lock", CKB_RPC_INDEX_URL)
 
         // set scripts :( account,cells[0].height -1 ) ,want to collected cells that not used ;
-        await setScripts([{script: script, block_number: BI.from(cells.objects[0].block_number).sub(1).toHexString()}])
+        await setScripts([{script: script,script_type:"lock", block_number: BI.from(cells.objects[0].block_number).sub(1).toHexString()}])
 
         // wait update height > cells[0].block_number
         await waitScriptsUpdate(BI.from(cells.objects[0].block_number))

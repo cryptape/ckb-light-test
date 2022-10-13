@@ -21,7 +21,7 @@ describe('get_scripts', function () {
 
     it('restart node ,get script result not mod,cells do not abandon',async ()=>{
         // set script
-        await setScripts([{script:MINER_SCRIPT,block_number:"0x1"}])
+        await setScripts([{script:MINER_SCRIPT,script_type:"lock",block_number:"0x1"}])
         let result = await getScripts()
         expect(result.length).to.be.equal(1)
 
@@ -39,7 +39,7 @@ describe('get_scripts', function () {
 
     })
     it("Interval query script, the height keeps increasing",async ()=>{
-        await setScripts([{script:MINER_SCRIPT,block_number:"0x1"}])
+        await setScripts([{script:MINER_SCRIPT,script_type:"lock",block_number:"0x1"}])
         await Sleep(30000)
         let scripts = await getScripts()
         expect(BI.from(scripts[0].block_number).toNumber()).to.be.gt(1)

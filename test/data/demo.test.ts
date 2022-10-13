@@ -1,13 +1,20 @@
 import {getTestDataByFile} from "./test_data";
-import { CKB_RPC_INDEX_URL} from "../../config/config";
+import {CKB_LIGHT_RPC_URL, CKB_RPC_INDEX_URL} from "../../config/config";
 import {BI} from "@ckb-lumos/lumos";
-import {getTransactions, setScripts, waitScriptsUpdate} from "../../rpc";
+import {getTransactions, setScripts, waitScriptsUpdate,} from "../../rpc";
 import {getTransactionList} from "../../service/txService";
 import * as fs from "fs";
 import {expect} from "chai";
 
 describe('demo', function () {
-    this.timeout(1000000)
+    this.timeout(1000000000)
+    let idx = 0
+    let step = 1
+    function SkipStep(step:number):boolean{
+        idx++
+        return  (idx%step) == 0
+    }
+
 
     function getTestDataPath(): string[] {
         return fs.readdirSync("resource").map(file => "resource/" + file)
@@ -16,6 +23,7 @@ describe('demo', function () {
     let files = getTestDataPath()
 
     for (let i = 0; i < files.length; i++) {
+        if (!SkipStep(step))continue;
         describe(files[i], function () {
             let td;
             before(async () => {
@@ -33,9 +41,9 @@ describe('demo', function () {
 
             it('getTransactions', async () => {
 
-                let spt = []
+                let indexTotalTxs = []
                 let tds = td.getScriptSet()
-                let lightTxs = []
+                let lightTotalTxs = []
                 for (let j = 0; j < tds.length; j++) {
                     let testScpt = tds[j]
                     let indexTxs = await getTransactionList(
@@ -45,29 +53,30 @@ describe('demo', function () {
                         CKB_RPC_INDEX_URL,
                         [BI.from(td.begin_block_num).toHexString(),
                             BI.from(td.end_block_num).toHexString()])
+                    console.log('indexTxs .length :',indexTxs.length)
                    let lightTxs =  await getTransactionList(
                         testScpt.script,
                         testScpt.script_type,
                         undefined,
-                        CKB_RPC_INDEX_URL,
+                        CKB_LIGHT_RPC_URL,
                         [BI.from(td.begin_block_num).toHexString(),
                             BI.from(td.end_block_num).toHexString()])
                     for (let k = 0; k < indexTxs.length; k++) {
-                        spt.push(indexTxs[k])
+                        indexTotalTxs.push(indexTxs[k])
                     }
                     for (let k = 0; k < lightTxs.length; k++) {
-                        lightTxs.push(lightTxs[k])
+                        lightTotalTxs.push(lightTxs[k])
                     }
 
                 }
 
                 let tdList = td.getTxHashList()
-                let uniqueList =  unique(spt)
-                let uniqueLightList = unique(lightTxs)
-                console.log('getTransactionList Length:',uniqueList.length)
+                let uniqueIndexList =  unique(indexTotalTxs)
+                let uniqueLightList = unique(lightTotalTxs)
+                console.log('getTransactionList Length:',uniqueIndexList.length)
                 console.log('td.script_types length:', tdList.length)
                 console.log('light client length:',uniqueLightList.length)
-                let diffHashList = uniqueList.filter(tx=> !tdList.some(tdHash=> tdHash == tx))
+                let diffHashList = uniqueIndexList.filter(tx=> !tdList.some(tdHash=> tdHash == tx))
                 let diffLightResult = uniqueLightList.filter(tx =>!tdList.some(tdHash=>tdHash == tx))
                 diffHashList.forEach(txHash=>{
                     console.log("diff:",txHash)
@@ -77,7 +86,7 @@ describe('demo', function () {
                     console.log("diff:",txHash)
                 })
                 expect(diffHashList.length).to.be.equal(diffLightResult.length)
-
+                expect(lightTotalTxs.length).to.be.gte(tdList.length)
             })
 
 

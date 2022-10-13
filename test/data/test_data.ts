@@ -52,11 +52,11 @@ export class test_data {
     getTxHashList():string[]{
         let txs = []
         for (let i = 0; i < this.script_types.length; i++) {
-            let spts = this.script_types[i]
-            if(txs.some(tx => tx == spts.hash)){
+            let spt = this.script_types[i]
+            if(txs.some(tx => tx == spt.hash)){
                 continue
             }
-            txs.push(spts.hash)
+            txs.push(spt.hash)
         }
         return txs
     }

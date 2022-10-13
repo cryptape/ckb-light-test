@@ -113,8 +113,8 @@ export function getTransferExtraLockCell(inputCell: Cell[], script: ScriptObject
 
 }
 
-export async function getTransactionList(scriptObject: ScriptObject, script_type: "lock" | "type", lastCursor: string, url: string, block_range: HexString[] = []) {
-    let txList = []
+export async function getTransactionList(scriptObject: ScriptObject, script_type: "lock" | "type", lastCursor: string, url: string, block_range: HexString[] = []):Promise<string[]> {
+    let txList:string[] = []
     while (true) {
         let result = await getTransactions({
             script: scriptObject,
@@ -125,18 +125,19 @@ export async function getTransactionList(scriptObject: ScriptObject, script_type
             }
         }, {sizeLimit: 10000, lastCursor: lastCursor}, url)
         if (result.objects.length == 0) {
-            break
+            return txList
         }
-        txList.push(...result.objects.map(tx => {
+        for (let i = 0; i < result.objects.length; i++) {
+            let tx = result.objects[i]
             if (tx.tx_hash != null) {
-                return tx.tx_hash
+                txList.push( tx.tx_hash)
+                continue
             }
-            return tx.transaction.hash
-        }))
+            txList.push( tx.transaction.hash)
+        }
         lastCursor = result.lastCursor
         console.log('current totalSize:', txList.length, 'cursor:', lastCursor)
     }
-    return txList
 }
 
 export async function getTransactionsLength(scriptObject: ScriptObject, script_type: "lock" | "type", lastCursor: string, url: string, block_range: HexString[] = []) {

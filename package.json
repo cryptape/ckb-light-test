@@ -38,6 +38,7 @@
   "scripts": {
     "test": "mocha --config test/runners/mocha/.mocharc.jsonc --reporter mochawesome",
     "test-load": "mocha --config  test/runners/mocha/.mocharc.load.jsonc --reporter mochawesome",
-    "test-data": "mocha --config  test/runners/mocha/.mocharc.data.jsonc --reporter mochawesome"
+    "test-data": "mocha --config  test/runners/mocha/.mocharc.data.jsonc --reporter mochawesome",
+    "test-cli": "mocha --config  test/runners/mocha/.mocharc.cli.jsonc --reporter mochawesome"
   }
 }

@@ -30,7 +30,7 @@ describe('cli', function () {
             })
             it("--allow-empty", async () => {
                 let result = await LightCli.setScript("--allow-empty")
-                expect(result).to.be.include("success")
+                expect(result.stdout).to.be.include("success")
             })
         });
     });

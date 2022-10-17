@@ -318,3 +318,7 @@ export async function sendTransaction(tx: any,ckbLightClient:string=ckbLightClie
   const res = await request(1, ckbLightClient, "send_transaction", [tx]);
   return res;
 }
+
+export async function getGenesisBlock(ckbLightClient:string=ckbLightClientRPC){
+  return  await request(1,ckbLightClient,"get_genesis_block",[])
+}

@@ -123,7 +123,7 @@ export async function getTransactionList(scriptObject: ScriptObject, script_type
             filter: {
                 block_range: block_range
             }
-        }, {sizeLimit: 10000, lastCursor: lastCursor}, url)
+        }, {sizeLimit: 3000, lastCursor: lastCursor}, url)
         if (result.objects.length == 0) {
             return txList
         }

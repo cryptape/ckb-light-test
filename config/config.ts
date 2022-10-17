@@ -4,7 +4,7 @@ import {LightClientCli} from "../service/light-cli";
 
 const CKB_CLIENT_CLI_PATH = "tmp/ckb-cli-light-client"
 const CKB_LIGHT_CLIENT_PATH = "tmp/startBlockchain/ckbLightClient/ckb-light-client"
-const RPC_DEBUG = false
+const RPC_DEBUG = true
 const CKB_RPC_URL = "https://testnet.ckb.dev";
 const CKB_RPC_INDEX_URL = "https://testnet.ckb.dev/indexer";
 const CKB_LIGHT_RPC_URL = "http://localhost:9000";

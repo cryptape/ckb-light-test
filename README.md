@@ -4,5 +4,5 @@
 ```
 npm install 
 sh prepare.sh
-npm run test-issue
+npm run test
 ```

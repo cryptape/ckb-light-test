@@ -12,7 +12,7 @@ import {
 } from "../rpc";
 import {BI, helpers} from "@ckb-lumos/lumos";
 import {AGGRON4} from "./transfer";
-import {FEE} from "../config/config";
+import {FEE, RPC_DEBUG} from "../config/config";
 import {SearchKeyFilter} from "./type";
 import {HexString} from "@ckb-lumos/base/lib/primitive";
 
@@ -123,7 +123,7 @@ export async function getTransactionList(scriptObject: ScriptObject, script_type
             filter: {
                 block_range: block_range
             }
-        }, {sizeLimit: 10000, lastCursor: lastCursor}, url)
+        }, {sizeLimit: 3000, lastCursor: lastCursor}, url)
         if (result.objects.length == 0) {
             return txList
         }
@@ -136,7 +136,9 @@ export async function getTransactionList(scriptObject: ScriptObject, script_type
             txList.push( tx.transaction.hash)
         }
         lastCursor = result.lastCursor
-        console.log('current totalSize:', txList.length, 'cursor:', lastCursor)
+        if(RPC_DEBUG){
+            console.log('current totalSize:', txList.length, 'cursor:', lastCursor)
+        }
     }
 }
 

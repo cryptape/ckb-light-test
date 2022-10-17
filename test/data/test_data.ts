@@ -49,14 +49,15 @@ export class test_data {
         )
     }
 
-    getTxHashList():string[]{
-        let txs = []
+    getTxHashList():Set<String>{
+        let txs:Set<String>= new Set();
         for (let i = 0; i < this.script_types.length; i++) {
             let spt = this.script_types[i]
-            if(txs.some(tx => tx == spt.hash)){
+            if (txs.has(spt.hash)){
                 continue
             }
-            txs.push(spt.hash)
+
+            txs.add(spt.hash)
         }
         return txs
     }

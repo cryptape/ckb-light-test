@@ -7,6 +7,7 @@
         "test/get_header.spec.ts",
         "test/get_transaction.spec.ts",
         "test/set_scripts.spec.ts",
-        "test/scenes.test.ts"
+        "test/scenes.test.ts",
+        "test/get_cells.spec.ts",
     ]
 }

@@ -337,9 +337,6 @@ describe('get_cell', function () {
                                 printCells(cellsWithData.objects)
                                 expect(cellsWithData.objects.length).to.be.equal(0)
                             })
-                            // it("not set' lock search type",async ()=>{
-                            //
-                            // })
 
 
                             it("type search lock,should return data", async () => {
@@ -519,10 +516,7 @@ describe('get_cell', function () {
                         });
                         describe('block_range', function () {
 
-                            let scripts;
-                            before(async () => {
 
-                            })
                             // block 0 filter
                             it(" not exit block num ", async () => {
                                 let cellsWithData = await getCellsRequest({
@@ -567,6 +561,7 @@ describe('get_cell', function () {
                                     }
                                 })
 
+                                //
                                 expect(cellsWithDataWithRange.objects.length).to.be.equal(cellsWithData.objects.length)
                             })
 
@@ -759,7 +754,7 @@ async function sleep(timeOut: number) {
     await new Promise(r => setTimeout(r, timeOut));
 }
 
-function getMinBlockNumByCells(cells: any[]) {
+export function getMinBlockNumByCells(cells: any[]) {
     let maxCellsNum = BI.from(cells[0].block_number)
     let minCellsNum = BI.from(cells[cells.length - 1].block_number)
     return {maxCellsNum, minCellsNum}

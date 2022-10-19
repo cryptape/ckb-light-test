@@ -9,5 +9,6 @@
         "test/set_scripts.spec.ts",
         "test/scenes.test.ts",
         "test/get_cells.spec.ts",
+        "test/get_cells_capacity.spec.ts"
     ]
 }

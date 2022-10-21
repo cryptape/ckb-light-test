@@ -3,6 +3,6 @@
         "test/runners/mocha/init.js"
     ],
     "spec": [
-        "test/ci/cli.transfer.issue.ts"
+        "test/cli/cli.transfer.issue.ts"
     ]
 }

@@ -155,7 +155,7 @@ const request = async (
         );
     }
     if (RPC_DEBUG_SERVICE) {
-        console.log(data.result)
+        console.log( JSON.stringify(data.result))
     }
     return data.result;
 };

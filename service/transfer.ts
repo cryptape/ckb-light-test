@@ -14,8 +14,16 @@ import {
     WitnessArgs,
 } from "@ckb-lumos/lumos";
 import {OutPoint, Transaction, values} from "@ckb-lumos/base";
-import {ANY_ONE_CAN_PAY, ANY_ONE_CAN_PAY_TYPE_ID, CKB_LIGHT_RPC_URL, FEE, FeeRate, rpcCLient} from "../config/config";
-import {DepType} from "@ckb-lumos/base/lib/api";
+import {
+    EVERY_ONE_CAN_PAY,
+    EVERY_ONE_CAN_PAY_TYPE_ID,
+    CKB_LIGHT_RPC_URL, CKB_RPC_INDEX_URL,
+    CKB_RPC_URL,
+    FEE,
+    FeeRate,
+    rpcCLient
+} from "../config/config";
+import {CellDep, DepType} from "@ckb-lumos/base/lib/api";
 import {ScriptMsg, sendTransaction, setScripts, waitScriptsUpdate} from "../rpc";
 import {fetchTransactionUntilFetched} from "./txService";
 
@@ -25,10 +33,8 @@ export const { AGGRON4 } = config.predefined;
 
 
 
-const CKB_RPC_URL = "https://testnet.ckb.dev/rpc";
-const CKB_INDEXER_URL = "https://testnet.ckb.dev/indexer";
 const defaultRpc = new RPC(CKB_RPC_URL);
-const indexer = new Indexer(CKB_INDEXER_URL, CKB_RPC_URL);
+const indexer = new Indexer(CKB_RPC_INDEX_URL, CKB_RPC_URL);
 
 type Account = {
     lockScript: Script;
@@ -76,7 +82,7 @@ interface Options {
     outputCells: Cell[];
     privKey: string;
     inputCells?: Cell[];
-    deps?:[];
+    deps?:CellDep[];
     lightMode?:boolean;
     lightNotInstallCellMode?:boolean;
 }
@@ -129,8 +135,8 @@ export async function send_tx_with_input(options:Options):Promise<string>{
             },
             {
                 out_point: {
-                    tx_hash: ANY_ONE_CAN_PAY.TX_HASH,
-                    index: ANY_ONE_CAN_PAY.INDEX,
+                    tx_hash: EVERY_ONE_CAN_PAY.TX_HASH,
+                    index: EVERY_ONE_CAN_PAY.INDEX,
                 },
                 dep_type:  AGGRON4.SCRIPTS.SUDT.DEP_TYPE,
             }
@@ -244,8 +250,8 @@ export async function send_tx_options(options:Options):Promise<string>{
             },
             {
                 out_point: {
-                    tx_hash: ANY_ONE_CAN_PAY_TYPE_ID.TX_HASH,
-                    index: ANY_ONE_CAN_PAY_TYPE_ID.INDEX,
+                    tx_hash: EVERY_ONE_CAN_PAY_TYPE_ID.TX_HASH,
+                    index: EVERY_ONE_CAN_PAY_TYPE_ID.INDEX,
                 },
                 dep_type:  AGGRON4.SCRIPTS.SUDT.DEP_TYPE,
             }

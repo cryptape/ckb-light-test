@@ -264,14 +264,14 @@ export async function getTransactions(searchKey: GetTransactionsSearchKey, searc
 
 export async function fetch_header(block_hash: string, ckbLightClient: string = ckbLightClientRPC) {
     const res = await request(2, ckbLightClient, "fetch_header", [block_hash]);
-    return {}
+    return res
 }
 
 
 export async function fetch_transaction(tx_hash: string, ckbLightClient: string = ckbLightClientRPC) {
     const res = await request(2, ckbLightClient, "fetch_transaction", [tx_hash]);
 
-    return {}
+    return res
 }
 
 // const get_cells_capacity_params = [

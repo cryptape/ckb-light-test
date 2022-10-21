@@ -1,6 +1,6 @@
 import {getScripts, getTipHeader, ScriptMsg, setScripts, waitScriptsUpdate} from "../rpc";
 import {expect} from 'chai'
-import {rpcCLient} from "../config/config";
+import {CkbClientNode, MINER_SCRIPT, rpcCLient} from "../config/config";
 import {AGGRON4} from "../service/transfer";
 import {Script} from "@ckb-lumos/base";
 import {BI} from "@ckb-lumos/lumos";
@@ -251,6 +251,7 @@ describe('set_scripts', function () {
                         args: "0x2760d76d61cafcfc1a83d9d3d6b70c36fa9d4b1a"
                     },script_type:"lock", block_number: "0xffffffffffffffff"
                 }])
+                await waitScriptsUpdate(BI.from("12345678"))
 
             });
 

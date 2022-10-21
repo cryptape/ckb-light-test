@@ -39,14 +39,14 @@ describe('monit miner test', function () {
     }
 
     before(async () => {
-        // let setScriptObjs: ScriptMsg[] = minerScripts.map(script => {
-        //     return {
-        //         script: script,
-        //         script_type: "lock",
-        //         block_number: "0x0"
-        //     }
-        // })
-        // await setScripts(setScriptObjs)
+        let setScriptObjs: ScriptMsg[] = minerScripts.map(script => {
+            return {
+                script: script,
+                script_type: "lock",
+                block_number: "0x0"
+            }
+        })
+        await setScripts(setScriptObjs)
         ckb_tip_number = await rpcCLient.get_tip_block_number()
         await waitScriptsUpdate(BI.from(6990015))
     })

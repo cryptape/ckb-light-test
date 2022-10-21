@@ -18,6 +18,7 @@ export class LightClientCli {
         return await this.cli(" rpc set-scripts "+ data)
     }
 
+
     async cli(data:string):Promise<any>{
         return await sh(  this.CLI+data)
     }

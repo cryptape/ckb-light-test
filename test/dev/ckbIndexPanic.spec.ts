@@ -1,6 +1,6 @@
 import {
     cleanAllEnv,
-    cut_miner_and_wait_lightClient_sync,
+    cut_miner_and_wait_lightClient_sync, getCapMsg,
     miner_block_number,
     miner_block_until_number, restartAndSyncCkbIndex
 } from "../../service/CkbDevService";
@@ -21,6 +21,9 @@ describe('ckb-index', function () {
             return
         }
         await cut_miner_and_wait_lightClient_sync(90, 91)
+        console.log("log dir: tmp/startBlockchain/ckbDevWithIndexAndeLightClient/ckb-indexer/target/release/node.log")
+        await getCapMsg()
+
     })
 
 });

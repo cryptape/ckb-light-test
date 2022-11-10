@@ -153,7 +153,9 @@ export async function miner_block(kill_port: boolean = true) {
         await shWithTimeOutNotErr("lsof -i:8888 | grep LIS  | awk '{print $2}'| xargs -n1 kill -9", 2000)
     }
     await shWithTimeOutNotErr(" cd " + CKB_DEV_PATH + " && ./ckb miner -C dev -l 40 > block.log", 2000)
-
+    if(kill_port){
+        await shWithTimeOutNotErr("lsof -i:8888 | grep LIS  | awk '{print $2}'| xargs -n1 kill -9", 2000)
+    }
     await shWithTimeOutNotErr("cat " + CKB_DEV_PATH + "/block.log | grep Found", 1000)
 }
 

@@ -1,10 +1,14 @@
 import { deployContractByArray, upgradeContract} from "../../service/deploy.util";
-import {ACCOUNT_PRIVATE, ACCOUNT_PRIVATE2, EVERY_ONE_CAN_PAY} from "../../config/config";
+import {ACCOUNT_PRIVATE, ACCOUNT_PRIVATE2, CKB_RPC_URL, EVERY_ONE_CAN_PAY, rpcCLient} from "../../config/config";
 import * as fs from 'fs-extra';
 import {AGGRON4, generateAccountFromPrivateKey, send_tx, send_tx_with_input, transfer} from "../../service/transfer";
 import {Hash, HexNumber} from "@ckb-lumos/base/lib/primitive";
 import {OutPoint, Script} from "@ckb-lumos/base/lib/api";
 import {BI} from "@ckb-lumos/lumos";
+import {request} from "../../service";
+import {CKB_TEST_RPC_URL} from "../unifra/config";
+import {getTransactionWaitCommit} from "../../service/txService";
+import {Sleep} from "../../service/util";
 //
 // fs.readFile('/Users/joe/test.txt', 'utf8' , (err, data) => {
 //     if (err) {
@@ -49,31 +53,25 @@ describe('demo', function () {
 
 
     })
+    it("wait tx",async ()=>{
+        for (let i = 0; i < 100000000; i++) {
+            await request(1,CKB_TEST_RPC_URL,"clear_tx_pool",[])
+            await Sleep(50)
+        }
+
+    })
     it('transfer ', async () => {
 
         let account = generateAccountFromPrivateKey(ACCOUNT_PRIVATE)
-        let tx = await send_tx({
-                privKey: ACCOUNT_PRIVATE,
-                from: account.address,
-                outputCells: [{
-                    cell_output: {
-                        capacity: BI.from(100 * 100000000).toHexString(),
-                        lock: {
-                            code_hash: EVERY_ONE_CAN_PAY.CODE_HASH,
-                            hash_type: "type",
-                            args: "0x",
-                        },
-                        type: {
-                            code_hash: EVERY_ONE_CAN_PAY.CODE_HASH,
-                            hash_type: "type",
-                            args: "0x",
-                        }
-                    },
-                    data: "0x"
-                }]
-            }
-        )
+        let tx = await transfer({
+            from: account.address,
+            to: account.address,
+            amount: "80",
+            privKey: ACCOUNT_PRIVATE,
+        })
         console.log('tx:', tx)
+
+        await getTransactionWaitCommit(tx,CKB_RPC_URL,100)
     })
 
     it('cost any pay ', async () => {

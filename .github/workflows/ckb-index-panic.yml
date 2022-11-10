@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-       with:
+        with:
           ref: roll-back
       - uses: actions/setup-node@v3
         with:

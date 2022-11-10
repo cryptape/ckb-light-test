@@ -4,10 +4,10 @@ import {LightClientCli} from "../service/light-cli";
 
 const CKB_CLIENT_CLI_PATH = "tmp/ckb-cli-light-client"
 const CKB_LIGHT_CLIENT_PATH = "tmp/startBlockchain/ckbLightClient/ckb-light-client"
-const DEV_PATH = "tmp/startBlockchain/ckbDevWithIndexAndeLightClient"
-const CKB_DEV_PATH = "tmp/startBlockchain/ckbDevWithIndexAndeLightClient/ckb/target/release"
-const CKB_DEV_INDEX_PATH = "tmp/startBlockchain/ckbDevWithIndexAndeLightClient/ckb-indexer/target/release"
-const CKB_DEV_LIGHT_CLIENT_PATH = "tmp/startBlockchain/ckbDevWithIndexAndeLightClient/ckb-light-client/target/release"
+const DEV_PATH = "tmp/startBlockchain/ckbDevWithIndexAndLightClient"
+const CKB_DEV_PATH = "tmp/startBlockchain/ckbDevWithIndexAndLightClient/ckb/target/release"
+const CKB_DEV_INDEX_PATH = "tmp/startBlockchain/ckbDevWithIndexAndLightClient/ckb-indexer/target/release"
+const CKB_DEV_LIGHT_CLIENT_PATH = "tmp/startBlockchain/ckbDevWithIndexAndLightClient/ckb-light-client/target/release"
 
 const CKB_DEV_RPC_URL = "http://localhost:8114";
 const CKB_DEV_RPC_INDEX_URL = "http://localhost:8116";

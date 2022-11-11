@@ -56,7 +56,7 @@ describe('rollback', function () {
         // }
     })
 
-    it("cut 300 ,miner 400,check roll back ", async () => {
+    it("cut 300 ,miner 400,check roll back", async () => {
         await cleanAndRestartCkbLightClientEnv()
         await miner_block_until_number(500)
         await initLightClient()

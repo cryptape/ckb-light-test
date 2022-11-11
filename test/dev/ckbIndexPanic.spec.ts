@@ -2,10 +2,13 @@ import {
     cleanAllEnv,
     cut_miner_and_wait_lightClient_sync, getCapMsg,
     miner_block_number,
-    miner_block_until_number, restartAndSyncCkbIndex
+    miner_block_until_number, restartAndSyncCkbIndex, truncate_to_block
 } from "../../service/CkbDevService";
-import {rpcDevCLient} from "../../config/config";
+import {CKB_DEV_INDEX_PATH, rpcDevCLient} from "../../config/config";
 import {BI} from "@ckb-lumos/bi";
+import {sh} from "../../service/node";
+import {expect} from "chai";
+import {Sleep} from "../../service/util";
 
 describe('ckb-index', function () {
 
@@ -13,17 +16,23 @@ describe('ckb-index', function () {
 
     it("ckb-index panic test ", async () =>{
         // await cleanAllEnv()
+        await miner_block_until_number(1050 )
+        await truncate_to_block(1020)
+        await Sleep(1)
         await restartAndSyncCkbIndex()
-        await miner_block_until_number(1000 )
-        let tip_num = await rpcDevCLient.get_tip_block_number()
-        if (BI.from(tip_num).gt(1090)){
-            console.log("tip num too height ,plseae clean clean and restart")
-            return
-        }
         await cut_miner_and_wait_lightClient_sync(90, 91)
-        console.log("log dir: tmp/startBlockchain/ckbDevWithIndexAndeLightClient/ckb-indexer/target/release/node.log")
-        await getCapMsg()
+        try {
+            await getCapMsg()
+        }catch (e){
+            console.log(e)
+            await catCkbIndexLog()
+            expect("").to.be.equal("failed")
+        }
 
     })
 
 });
+
+async function catCkbIndexLog(){
+    await sh("cd "+CKB_DEV_INDEX_PATH+" && cat ckb-indexer.log")
+}

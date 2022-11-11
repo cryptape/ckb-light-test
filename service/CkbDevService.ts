@@ -72,7 +72,10 @@ export async function compare_cells_result(scriptObject1: ScriptObject) {
 export async function cut_number(cut_number: number) {
     const tip_number = BI.from(await rpcDevCLient.get_tip_block_number()).toNumber()
     const reset_num = tip_number - cut_number
-    const hash = await rpcDevCLient.get_block_hash(BI.from(reset_num).toHexString())
+    return truncate_to_block(reset_num)
+}
+export async function truncate_to_block(block_number:number){
+    const hash = await rpcDevCLient.get_block_hash(BI.from(block_number).toHexString())
     await truncate(CKB_DEV_RPC_URL, hash)
 }
 
@@ -186,7 +189,8 @@ export async function startEnv() {
 }
 
 export async function restartAndSyncCkbIndex() {
-    await sh("cd " + CKB_DEV_INDEX_PATH + " && pkill ckb-indexer && rm -rf ckb-test && RUST_LOG=info ./ckb-indexer -s ckb-test > ckb-indexer.log 2>&1 &")
+    await shWithTimeOutNotErr(" pkill ckb-indexer",1000)
+    await sh("cd " + CKB_DEV_INDEX_PATH + " && rm -rf ckb-test && RUST_LOG=info ./ckb-indexer -s ckb-test > ckb-indexer.log 2>&1 &")
     await checkCKbIndexSync()
 }
 

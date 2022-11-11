@@ -1,12 +1,18 @@
 import {
     cleanAndRestartCkbLightClientEnv,
     compare_cells_result,
-    cut_miner_and_wait_lightClient_sync, getCapMsg, miner_block,
+    cut_miner_and_wait_lightClient_sync, miner_block,
     miner_block_until_number, restartAndSyncCkbIndex, transferDevService
 } from "../../service/CkbDevService";
 import {expect} from "chai";
 import {generateAccountFromPrivateKey, transfer} from "../../service/transfer";
-import {ACCOUNT_PRIVATE, ACCOUNT_PRIVATE2, CKB_DEV_RPC_URL, rpcDevCLient} from "../../config/config";
+import {
+    ACCOUNT_PRIVATE,
+    ACCOUNT_PRIVATE2,
+    CKB_DEV_RPC_INDEX_URL,
+    CKB_DEV_RPC_URL, CKB_LIGHT_RPC_URL,
+    rpcDevCLient
+} from "../../config/config";
 import {checkScriptsInLightClient, getCellsCapacityRequest, setScripts, waitScriptsUpdate} from "../../rpc";
 import {BI} from "@ckb-lumos/bi";
 import {getTransactionWaitCommit} from "../../service/txService";
@@ -19,11 +25,12 @@ describe('rollback', function () {
 
     async function initLightClient() {
         if (!(await checkScriptsInLightClient([miner.lockScript, acc2.lockScript]))) {
-            await setScripts([{
-                script: miner.lockScript,
-                script_type: "lock",
-                block_number: "0x0"
-            },
+            await setScripts([
+                {
+                    script: miner.lockScript,
+                    script_type: "lock",
+                    block_number: "0x0"
+                },
                 {
                     script: acc2.lockScript,
                     script_type: "lock",
@@ -40,39 +47,81 @@ describe('rollback', function () {
         await cleanAndRestartCkbLightClientEnv()
         await miner_block_until_number(1050)
         await initLightClient()
-        const result = await compare_cells_result(miner.lockScript)
-        await cut_miner_and_wait_lightClient_sync(13, 14)
-        const result2 = await compare_cells_result(miner.lockScript)
-        expect(result).to.be.equal(true)
-        expect(result2).to.be.equal(true)
+        // for (let i = 0; i < 100; i++) {
+            const result = await compare_cells_result(miner.lockScript)
+            await cut_miner_and_wait_lightClient_sync(13, 14)
+            const result2 = await compare_cells_result(miner.lockScript)
+            expect(result).to.be.equal(true)
+            expect(result2).to.be.equal(true)
+        // }
     })
 
-    it("cut 300 ,miner 400,check roll back ",async ()=>{
+    it("cut 300 ,miner 400,check roll back ", async () => {
         await cleanAndRestartCkbLightClientEnv()
-        await miner_block_until_number(3000)
+        await miner_block_until_number(500)
         await initLightClient()
-        const result = await compare_cells_result(miner.lockScript)
-        await cut_miner_and_wait_lightClient_sync(4000, 4001)
-        await restartAndSyncCkbIndex()
-        const result2 = await compare_cells_result(miner.lockScript)
-        expect(result).to.be.equal(true)
-        expect(result2).to.be.equal(true)
+
+        // for (let i = 0; i < 100; i++) {
+            const result = await compare_cells_result(miner.lockScript)
+            await cut_miner_and_wait_lightClient_sync(300, 400)
+            await restartAndSyncCkbIndex()
+            const result2 = await compare_cells_result(miner.lockScript)
+            expect(result).to.be.equal(true)
+            expect(result2).to.be.equal(true)
+        // }
     })
 
-    it("transfer roll back ",async ()=>{
+    it("transfer roll back ", async () => {
+        await miner_block_until_number(1500)
         await cleanAndRestartCkbLightClientEnv()
         await initLightClient()
-        await transfer_cut_and_wait_light_sync(900)
-        await restartAndSyncCkbIndex()
-        let compareMiner = await compare_cells_result(miner.lockScript)
-        let compareTo = await compare_cells_result(acc2.lockScript)
-        let result = await getCapMsg()
-        console.log("result:",result)
-        expect(compareMiner).to.be.equal(true)
-        expect(compareTo).to.be.equal(true)
-        expect(result.acc2_light).to.be.equal(result.acc2_index)
+        for (let i = 0; i < 2; i++) {
+            await transfer_cut_and_wait_light_sync(900)
+            await restartAndSyncCkbIndex()
+            let compareMiner = await compare_cells_result(miner.lockScript)
+            let compareTo = await compare_cells_result(acc2.lockScript)
+            let result = await getCapMsg()
+            console.log("result:", result)
+            // expect(compareMiner).to.be.equal(true)
+            // expect(compareTo).to.be.equal(true)
+            expect(result.acc2_light).to.be.equal(result.acc2_index)
+        }
 
     })
+
+    async function getCapMsg() {
+        const acc1Index = await getCellsCapacityRequest({
+            search_key: {
+                script: miner.lockScript,
+                script_type: "lock",
+            }
+        }, CKB_DEV_RPC_INDEX_URL)
+        const accLight = await getCellsCapacityRequest({
+            search_key: {
+                script: miner.lockScript,
+                script_type: "lock",
+            }
+        }, CKB_LIGHT_RPC_URL)
+
+        const acc2Index = await getCellsCapacityRequest({
+            search_key: {
+                script: acc2.lockScript,
+                script_type: "lock",
+            }
+        }, CKB_DEV_RPC_INDEX_URL)
+        const acc2Light = await getCellsCapacityRequest({
+            search_key: {
+                script: acc2.lockScript,
+                script_type: "lock",
+            }
+        }, CKB_LIGHT_RPC_URL)
+        return {
+            miner_Index: BI.from(acc1Index.capacity).toNumber(),
+            miner_light: BI.from(accLight.capacity).toNumber(),
+            acc2_index: BI.from(acc2Index.capacity).toNumber(),
+            acc2_light: BI.from(acc2Light.capacity).toNumber()
+        }
+    }
 
 
     async function transfer_cut_and_wait_light_sync(transfer_num: number) {

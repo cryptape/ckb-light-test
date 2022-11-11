@@ -1,14 +1,16 @@
 import {
     cleanAllEnv,
-    cut_miner_and_wait_lightClient_sync, getCapMsg,
+    cut_miner_and_wait_lightClient_sync,
     miner_block_number,
     miner_block_until_number, restartAndSyncCkbIndex, truncate_to_block
 } from "../../service/CkbDevService";
-import {CKB_DEV_INDEX_PATH, rpcDevCLient} from "../../config/config";
+import {ACCOUNT_PRIVATE, CKB_DEV_INDEX_PATH, CKB_DEV_RPC_INDEX_URL, rpcDevCLient} from "../../config/config";
 import {BI} from "@ckb-lumos/bi";
 import {sh} from "../../service/node";
 import {expect} from "chai";
 import {Sleep} from "../../service/util";
+import {getCellsCapacity, getCellsCapacityRequest} from "../../rpc";
+import {generateAccountFromPrivateKey} from "../../service/transfer";
 
 describe('ckb-index', function () {
 
@@ -22,13 +24,16 @@ describe('ckb-index', function () {
         await restartAndSyncCkbIndex()
         await cut_miner_and_wait_lightClient_sync(90, 91)
         try {
-            await getCapMsg()
-        }catch (e){
+             await getCellsCapacityRequest({
+                search_key: {
+                    script:generateAccountFromPrivateKey(ACCOUNT_PRIVATE).lockScript,
+                    script_type:"lock",
+                }
+            }, CKB_DEV_RPC_INDEX_URL)        }catch (e){
             console.log(e)
             await catCkbIndexLog()
             expect("").to.be.equal("failed")
         }
-
     })
 
 });

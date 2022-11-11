@@ -114,41 +114,6 @@ export async function getCellsMsg(scriptObject1: ScriptObject, url: string) {
 
 }
 
-export async function getCapMsg() {
-    let acc1 = generateAccountFromPrivateKey(ACCOUNT_PRIVATE);
-    let acc2 = generateAccountFromPrivateKey(ACCOUNT_PRIVATE2);
-    const acc1Index = await getCellsCapacityRequest({
-        search_key: {
-            script: acc1.lockScript,
-            script_type: "lock",
-        }
-    }, CKB_DEV_RPC_INDEX_URL)
-    const accLight = await getCellsCapacityRequest({
-        search_key: {
-            script: acc1.lockScript,
-            script_type: "lock",
-        }
-    }, CKB_LIGHT_RPC_URL)
-
-    const acc2Index = await getCellsCapacityRequest({
-        search_key: {
-            script: acc2.lockScript,
-            script_type: "lock",
-        }
-    }, CKB_DEV_RPC_INDEX_URL)
-    const acc2Light = await getCellsCapacityRequest({
-        search_key: {
-            script: acc2.lockScript,
-            script_type: "lock",
-        }
-    }, CKB_LIGHT_RPC_URL)
-    return {
-        acc1_Index: BI.from(acc1Index.capacity).toNumber(),
-        acc1_light: BI.from(accLight.capacity).toNumber(),
-        acc2_index: BI.from(acc2Index.capacity).toNumber(),
-        acc2_light: BI.from(acc2Light.capacity).toNumber()
-    }
-}
 
 
 export async function miner_block(kill_port: boolean = true) {

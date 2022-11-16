@@ -60,7 +60,7 @@ describe('get_transaction', function () {
         }
 
         // @ts-ignore
-        await setScripts([{script: script, block_number: BI.from(cells.objects[0].block_number).sub(1).toHexString()}])
+        await setScripts([{script: script, script_type:"lock",block_number: BI.from(cells.objects[0].block_number).sub(1).toHexString()}])
         let collect_cells_length = 0
         await waitScriptsUpdate(BI.from(cells.objects[0].block_number).add(100))
         let lightCells = await getCells(script)

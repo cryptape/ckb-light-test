@@ -340,7 +340,7 @@ describe('scenes', function () {
 
             it('get capacity，should > 0', async () => {
                 let capacityOnSync = await getCellsCapacity(MINER_SCRIPT3)
-                expect(BI.from(capacityOnSync).toNumber()).to.be.gt(0)
+                expect(BI.from(capacityOnSync.capacity).toNumber()).to.be.gt(0)
             })
 
         });
@@ -428,7 +428,7 @@ describe('scenes', function () {
                     for (let i = 0; i < 100; i++) {
                         let capacity = await getCellsCapacity(MINER_SCRIPT3)
                         let height  = await getScriptsHeight()
-                        console.log('height:',height.toNumber(),' cap:',BI.from(capacity).toNumber())
+                        console.log('height:',height.toNumber(),' cap:',BI.from(capacity.capacity).toNumber())
                     }
                 })
             });
@@ -444,7 +444,7 @@ describe('scenes', function () {
 
                 it('should > 0',async ()=>{
                     let result = await getCellsCapacity(MINER_SCRIPT3)
-                    expect(BI.from(result).toNumber()).to.be.gt(1)
+                    expect(BI.from(result.capacity).toNumber()).to.be.gt(1)
                 })
 
             });
@@ -467,7 +467,7 @@ describe('scenes', function () {
                     let response = await getCellsCapacity(MINER_SCRIPT3)
                     await Sleep(1000*10)
                     let response2 = await getCellsCapacity(MINER_SCRIPT3)
-                    expect(response).to.be.equal(response2)
+                    expect(response.capacity).to.be.equal(response2.capacity)
                 })
             })
         });

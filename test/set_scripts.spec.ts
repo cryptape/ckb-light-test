@@ -59,7 +59,7 @@ describe('set_scripts', function () {
 
     it('set with too many scripts,should return null',async ()=>{
 
-        const  size = 33000;
+        const  size = 10000;
         let scripts:ScriptMsg[] = [];
 
         for (let i = 0; i < size; i++) {

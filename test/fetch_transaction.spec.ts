@@ -1,6 +1,6 @@
 import {ACCOUNT_PRIVATE, CKB_RPC_URL, rpcCLient} from "../config/config";
 import {BI} from "@ckb-lumos/bi";
-import {fetch_header, fetch_transaction} from "../rpc";
+import { fetch_transaction} from "../rpc";
 import {expect} from "chai";
 import {Sleep} from "../service/util";
 import {generateAccountFromPrivateKey, transfer} from "../service/transfer";
@@ -33,7 +33,7 @@ describe('fetch_transaction', function () {
         let tx = await transfer({
             from: account.address,
             to: account.address,
-            amount:BI.from(500).toHexString(),
+            amount:BI.from(501).toHexString(),
             privKey:ACCOUNT_PRIVATE,
         })
         await waitFetchedHeaderStatusChange(tx,"fetched",10000)

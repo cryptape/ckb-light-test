@@ -468,10 +468,15 @@ export async function send_tx(options: Options): Promise<string> {
             data: "0x",
         };
         console.log('gen out put extra value ')
-        txSkeleton = txSkeleton.update("outputs", (outputs) => outputs.push(changeOutput));
+        if(collectedSum.sub(neededCapacity).sub(FeeRate.NORMAL).gt(6100000000)){
+            //expected occupied capacity (0x16b969d00)
+            txSkeleton = txSkeleton.update("outputs", (outputs) => outputs.push(changeOutput));
+        }else {
+            options.outputCells[0].cell_output.capacity = collectedSum.sub(neededCapacity).sub(FeeRate.NORMAL).add(options.outputCells[0].cell_output.capacity).toHexString()
+        }
     }
 
-    let SECP256K1_BLAKE160_HASH = (await this.defaultRpc.get_block_by_number("0x0")).transactions[1].hash
+    let SECP256K1_BLAKE160_HASH = (await defaultRpc.get_block_by_number("0x0")).transactions[1].hash
 
     txSkeleton = txSkeleton.update("outputs", (outputs) => outputs.push(...options.outputCells));
     txSkeleton = txSkeleton.update("inputs", (inputs) => inputs.push(...collected));
@@ -536,6 +541,7 @@ export async function send_tx(options: Options): Promise<string> {
         if(options.lightNotInstallCellMode == null||options.lightNotInstallCellMode == false){
             await installTxCells(tx)
         }
+        console.log("send tx:",tx)
         const hash = await sendTransaction(tx,CKB_LIGHT_RPC_URL)
         console.log("The CKB_LIGHT_RPC_URL transaction hash is", hash);
         return hash;

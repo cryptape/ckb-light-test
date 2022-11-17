@@ -13,7 +13,7 @@ import {Sleep} from "../service/util";
 
 describe('get_transaction', function () {
 
-    this.timeout(1000000)
+    this.timeout(600_000)
     it('txHash does not conform to hash rules', async () => {
         try {
             await getTransaction("0x3a46167541123530ac8100841d4e014028c60af18305e5594452d0b8aa65b1")

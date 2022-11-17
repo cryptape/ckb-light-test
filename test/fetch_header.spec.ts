@@ -6,7 +6,7 @@ import {BI} from "@ckb-lumos/bi";
 
 describe('fetch_header', function () {
 
-    this.timeout(1000_10000)
+    this.timeout(600_000)
 
     it("genesis hash,should return fetched", async () => {
         // https://pudge.explorer.nervos.org/block/0x10639e0895502b5688a6be8cf69460d76541bfa4821629d86d62ba0aae3f9606

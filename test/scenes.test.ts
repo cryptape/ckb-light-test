@@ -22,7 +22,7 @@ import {issueTokenCell} from "../service/sudt";
 import {Sleep} from "../service/util";
 
 describe('scenes', function () {
-    this.timeout(1000000000)
+    this.timeout(600_000)
     describe('clean data ', function () {
 
         before(async () => {

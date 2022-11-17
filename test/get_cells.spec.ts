@@ -18,7 +18,7 @@ import {Cell} from "@ckb-lumos/base/lib/api";
 
 describe('get_cell', function () {
 
-    this.timeout(1000000000)
+    this.timeout(600_000)
 
 
     describe('search_key', function () {

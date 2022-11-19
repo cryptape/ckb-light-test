@@ -21,7 +21,7 @@ import {getMinBlockNumByCells} from "./get_cells.spec";
 
 describe('get_cells_capacity', function () {
 
-    this.timeout(100000000)
+    this.timeout(600_000)
     describe('search_key', function () {
 
         const snapshot = true

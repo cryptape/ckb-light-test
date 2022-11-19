@@ -13,7 +13,7 @@ import {Sleep} from "../service/util";
 
 describe('get_transaction', function () {
 
-    this.timeout(1000000)
+    this.timeout(600_000)
     it('txHash does not conform to hash rules', async () => {
         try {
             await getTransaction("0x3a46167541123530ac8100841d4e014028c60af18305e5594452d0b8aa65b1")
@@ -60,7 +60,7 @@ describe('get_transaction', function () {
         }
 
         // @ts-ignore
-        await setScripts([{script: script, block_number: BI.from(cells.objects[0].block_number).sub(1).toHexString()}])
+        await setScripts([{script: script, script_type:"lock",block_number: BI.from(cells.objects[0].block_number).sub(1).toHexString()}])
         let collect_cells_length = 0
         await waitScriptsUpdate(BI.from(cells.objects[0].block_number).add(100))
         let lightCells = await getCells(script)

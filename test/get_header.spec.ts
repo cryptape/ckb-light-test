@@ -7,7 +7,7 @@ import {generateAccountFromPrivateKey} from "../service/transfer";
 
 describe('get_header', function () {
 
-    this.timeout(600000)
+    this.timeout(600_000)
 
     it("query the hash that does not exist on the ckb chain,should return null", async () => {
         let response = await getHeader("0x1d7c6f92fa3335bf01c3f43f8970cb586d2dee81b90d363169dbe1bba98d6c11")

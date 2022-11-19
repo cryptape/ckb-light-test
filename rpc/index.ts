@@ -103,6 +103,25 @@ export async function getScripts(ckbLightClient: string = ckbLightClientRPC) {
     return res;
 }
 
+export async function checkScriptsInLightClient(scripts:ScriptObject[],ckbLightClient:string = ckbLightClientRPC){
+    let res = await getScripts(ckbLightClient)
+    let getScriptList = res.map(result=>{
+        return {
+            code_hash:result.script.code_hash,
+            hash_type:result.script.hash_type,
+            args:result.script.args
+        }
+    })
+
+    return scripts.some(checkScript=>{
+        return getScriptList.some(getScript=>{
+            return getScript.code_hash == checkScript.code_hash &&
+                getScript.hash_type == checkScript.hash_type &&
+                getScript.args == checkScript.args
+        })
+    })
+}
+
 export async function waitScriptsUpdate(block_num: BI, ckbLightClient: string = ckbLightClientRPC) {
     while (true) {
         let res = await getScripts(ckbLightClient)

@@ -17,12 +17,12 @@ import {
 import {expect} from "chai";
 import {BI, RPC} from "@ckb-lumos/lumos";
 import {Output} from "@ckb-lumos/base/lib/api";
-import { generateAccountFromPrivateKey, getBlockNumByTxHash, send_tx} from "../service/transfer";
+import {AGGRON4, generateAccountFromPrivateKey, getBlockNumByTxHash, send_tx} from "../service/transfer";
 import {issueTokenCell} from "../service/sudt";
 import {Sleep} from "../service/util";
 
 describe('scenes', function () {
-    this.timeout(1000000000)
+    this.timeout(600_000)
     describe('clean data ', function () {
 
         before(async () => {
@@ -145,7 +145,16 @@ describe('scenes', function () {
                     from: acc.address,
                     outputCells: [cell],
                     privKey: ACCOUNT_PRIVATE,
-                    lightMode: true
+                    lightMode: true,
+                    deps: [
+                        {
+                            out_point: {
+                                tx_hash: AGGRON4.SCRIPTS.SUDT.TX_HASH,
+                                index: AGGRON4.SCRIPTS.SUDT.INDEX,
+                            },
+                            dep_type: AGGRON4.SCRIPTS.SUDT.DEP_TYPE,
+                        }
+                    ]
                 })
                 console.log('tx:', tx)
             })
@@ -169,7 +178,7 @@ describe('scenes', function () {
                 // cost tx: https://pudge.explorer.nervos.org/transaction/0x1850f997f867b6d3f1154444498a15e9fc4ce080215e34d0c41b33349bcc119a
                 {
                     script: MINER_SCRIPT3,
-                    script_type:"lock",
+                    script_type: "lock",
                     block_number: "0x0"
 
                     // block_number:"0x3e8"
@@ -340,7 +349,7 @@ describe('scenes', function () {
 
             it('get capacity，should > 0', async () => {
                 let capacityOnSync = await getCellsCapacity(MINER_SCRIPT3)
-                expect(BI.from(capacityOnSync).toNumber()).to.be.gt(0)
+                expect(BI.from(capacityOnSync.capacity).toNumber()).to.be.gt(0)
             })
 
         });
@@ -375,7 +384,7 @@ describe('scenes', function () {
                     // cost tx: https://pudge.explorer.nervos.org/transaction/0x1850f997f867b6d3f1154444498a15e9fc4ce080215e34d0c41b33349bcc119a
                     {
                         script: MINER_SCRIPT3,
-                        script_type:"lock",
+                        script_type: "lock",
                         block_number: "0x0"
                     }])
 
@@ -427,33 +436,33 @@ describe('scenes', function () {
                 it('高度未达到上次set_script,get_cell收集的数量不变', async () => {
                     for (let i = 0; i < 100; i++) {
                         let capacity = await getCellsCapacity(MINER_SCRIPT3)
-                        let height  = await getScriptsHeight()
-                        console.log('height:',height.toNumber(),' cap:',BI.from(capacity).toNumber())
+                        let height = await getScriptsHeight()
+                        console.log('height:', height.toNumber(), ' cap:', BI.from(capacity.capacity).toNumber())
                     }
                 })
             });
             describe('get_transactions', function () {
 
-                it('should > 0 ',async ()=>{
-                    let scriptLength = await getTransactionsLength(MINER_SCRIPT3,undefined,CKB_LIGHT_RPC_URL)
+                it('should > 0 ', async () => {
+                    let scriptLength = await getTransactionsLength(MINER_SCRIPT3, undefined, CKB_LIGHT_RPC_URL)
                     expect(scriptLength).to.be.gt(1)
                 })
 
             });
             describe('get_cells_capacity', function () {
 
-                it('should > 0',async ()=>{
+                it('should > 0', async () => {
                     let result = await getCellsCapacity(MINER_SCRIPT3)
-                    expect(BI.from(result).toNumber()).to.be.gt(1)
+                    expect(BI.from(result.capacity).toNumber()).to.be.gt(1)
                 })
 
             });
         });
         describe('script [[]]', function () {
-            before(async ()=>{
+            before(async () => {
                 await setScripts([])
                 let result = await getScripts()
-                console.log('result:',result)
+                console.log('result:', result)
                 expect(result.toString()).to.be.equal('')
             })
             describe('get_cells', function () {
@@ -462,12 +471,12 @@ describe('scenes', function () {
                     //todo
                 })
             });
-            describe('getCellsCapacity',function (){
-                it('The previous script will not continue to update',async ()=>{
+            describe('getCellsCapacity', function () {
+                it('The previous script will not continue to update', async () => {
                     let response = await getCellsCapacity(MINER_SCRIPT3)
-                    await Sleep(1000*10)
+                    await Sleep(1000 * 10)
                     let response2 = await getCellsCapacity(MINER_SCRIPT3)
-                    expect(response).to.be.equal(response2)
+                    expect(response.capacity).to.be.equal(response2.capacity)
                 })
             })
         });
@@ -524,20 +533,21 @@ async function getScriptsHeight(): Promise<BI> {
     let scriptObj = await getScripts()
     return BI.from(scriptObj[0].block_number)
 }
-export async function getTransactionsLength(scriptObject: ScriptObject,lastCursor:string,url:string) {
+
+export async function getTransactionsLength(scriptObject: ScriptObject, lastCursor: string, url: string) {
     let totalSize = 0
-    while (true){
+    while (true) {
         let result = await getTransactions({
-            script:scriptObject,
+            script: scriptObject,
             script_type: "lock",
-            group_by_transaction:true
-        },{sizeLimit:10000,lastCursor:lastCursor},url)
-        if(result.objects.length == 0){
+            group_by_transaction: true
+        }, {sizeLimit: 10000, lastCursor: lastCursor}, url)
+        if (result.objects.length == 0) {
             break
         }
         totalSize += result.objects.length
         lastCursor = result.lastCursor
-        console.log('current totalSize:',totalSize,'cursor:',lastCursor)
+        console.log('current totalSize:', totalSize, 'cursor:', lastCursor)
     }
     return totalSize
 }

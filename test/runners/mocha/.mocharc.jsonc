@@ -11,9 +11,9 @@
          "test/get_header.spec.ts",
          "test/get_scripts.spec.ts",
          "test/get_tip_header.spec.ts",
-         "test/get_transaction.spec.ts",
-         "test/get_transactions.spec.ts",
-         "test/set_scripts.spec.ts"
+//         "test/get_transaction.spec.ts",
+//         "test/get_transactions.spec.ts",
+//         "test/set_scripts.spec.ts"
 //         "test/scenes.test.ts"
     ]
 }

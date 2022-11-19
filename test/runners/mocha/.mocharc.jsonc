@@ -4,16 +4,16 @@
     ],
     "spec": [
         "test/fetch_header.spec.ts",
-        "test/fetch_transaction.spec.ts"
+        "test/fetch_transaction.spec.ts",
 //         "test/get_cells.spec.ts",
-//         "test/get_cells_capacity.spec.ts",
-//         "test/get_genesis_block.spec.ts",
-//         "test/get_header.spec.ts",
-//         "test/get_scripts.spec.ts",
-//         "test/get_tip_header.spec.ts",
-//         "test/get_transaction.spec.ts",
-//         "test/get_transactions.spec.ts",
-//         "test/set_scripts.spec.ts"
+         "test/get_cells_capacity.spec.ts",
+         "test/get_genesis_block.spec.ts",
+         "test/get_header.spec.ts",
+         "test/get_scripts.spec.ts",
+         "test/get_tip_header.spec.ts",
+         "test/get_transaction.spec.ts",
+         "test/get_transactions.spec.ts",
+         "test/set_scripts.spec.ts"
 //         "test/scenes.test.ts"
     ]
 }

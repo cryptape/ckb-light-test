@@ -51,11 +51,33 @@ export {
 }
 
 
-async function sh(cmd: string) {
+export async function shWithTimeOutNotErr(cmd:string,timeout:number){
     console.log('sh:', cmd)
     return new Promise(function (resolve, reject) {
-        exec(cmd, { timeout: 10000},(err, stdout, stderr) => {
+        let c = exec(cmd, { timeout: timeout},(err, stdout, stderr) => {
             if (err) {
+                // console.log(err)
+                if(!c.killed){
+                    c.kill()
+                }
+                resolve(err);
+            } else {
+                console.log('response:', stdout)
+                resolve({stdout, stderr});
+            }
+        });
+    });
+}
+export async function shWithTimeout(cmd:string,timeout:number){
+    console.log('sh:', cmd)
+    return new Promise(function (resolve, reject) {
+        let c = exec(cmd, { timeout: timeout},(err, stdout, stderr) => {
+            if (err) {
+                console.log(err)
+                console.log(c.pid)
+                console.log("killed:",c.killed)
+                // c.kill()
+                console.log("killed:",c.killed)
                 reject(err);
             } else {
                 console.log('response:', stdout)
@@ -63,6 +85,9 @@ async function sh(cmd: string) {
             }
         });
     });
+}
+export async function sh(cmd: string) {
+   return await shWithTimeout(cmd,10000)
 
 }
 

@@ -1,8 +1,3 @@
-import {BI, commons, core, hd, helpers, Indexer, RPC, toolkit, WitnessArgs} from "@ckb-lumos/lumos";
-import {AGGRON4, generateAccountFromPrivateKey} from "../../service/transfer";
-import {utils} from "@ckb-lumos/base";
-import {ACCOUNT_PRIVATE} from "../../config/config";
-import {issueToken} from "../../service/sudt.util";
 
 
 describe('sud test', function () {

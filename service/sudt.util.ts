@@ -43,5 +43,5 @@ export async function issueToken(privateKey: string, amount: BIish): Promise<str
     const message = txSkeleton.get("signingEntries").get(0)?.message;
     const Sig = hd.key.signRecoverable(message!, ACCOUNT_PRIVATE);
     let tx1 = helpers.sealTransaction(txSkeleton, [Sig]);
-    return await rpc.send_transaction(tx1, "passthrough");
+    return await rpc.sendTransaction(tx1, "passthrough");
 }

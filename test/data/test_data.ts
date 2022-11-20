@@ -1,5 +1,5 @@
 import {rpcCLient} from "../../config/config";
-import {BI} from "@ckb-lumos/lumos";
+import {BI} from "@ckb-lumos/bi";
 import {Script} from "@ckb-lumos/base/lib/api";
 import * as fs from "fs";
 
@@ -45,7 +45,7 @@ export class test_data {
     getScriptByHashType(hash_type: string): TestScript[] {
         console.log('getScriptByHashType')
         return this.script_types.filter(
-            script => script.script.hash_type == hash_type
+            script => script.script.hashType == hash_type
         )
     }
 
@@ -72,9 +72,9 @@ export class test_data {
         })
         for (let i = 0; i < test_sort_scripts.length; i++) {
             if (scripts.some(spt =>
-                spt.script.code_hash == this.script_types[i].script.code_hash &&
+                spt.script.codeHash == this.script_types[i].script.codeHash &&
                 spt.script.args == this.script_types[i].script.args &&
-                spt.script.hash_type == this.script_types[i].script.hash_type
+                spt.script.hashType == this.script_types[i].script.hashType
             )) {
                 continue
             }
@@ -95,12 +95,12 @@ export async function genTestData(begin_block_num: number, end_block_num: number
     let script_type_total: number = 0
     let script_data_total: number = 0
     let script_data1_total: number = 0
-    let height = await rpcCLient.get_tip_block_number()
+    let height = await rpcCLient.getTipBlockNumber()
     if (BI.from(height).toNumber() < end_block_num) {
         end_block_num = BI.from(height).toNumber()
     }
     for (let i = begin_block_num; i < end_block_num; i++) {
-        let response = await rpcCLient.get_block_by_number(BI.from(i).toHexString())
+        let response = await rpcCLient.getBlockByNumber(BI.from(i).toHexString())
 
         for (let j = 0; j < response.transactions.length; j++) {
             let tx = response.transactions[j]
@@ -115,11 +115,11 @@ export async function genTestData(begin_block_num: number, end_block_num: number
                         script_type: "type"
                     })
                 }
-                if (outPut.lock.hash_type != "type") {
-                    if (outPut.lock.hash_type == "data") {
+                if (outPut.lock.hashType != "type") {
+                    if (outPut.lock.hashType == "data") {
                         script_data_total++
                     }
-                    if (outPut.lock.hash_type == "data1") {
+                    if (outPut.lock.hashType == "data1") {
                         script_data1_total++
                     }
                     testScripts.push({
@@ -175,17 +175,17 @@ async function getTransactionByFilter(filterOption: FilterOption): Promise<strin
 
     let txs = []
     for (let i = filterOption.begin_block_num.toNumber(); i < filterOption.end_block_num.toNumber(); i++) {
-        let response = await rpcCLient.get_block_by_number(BI.from(i).toHexString())
+        let response = await rpcCLient.getBlockByNumber(BI.from(i).toHexString())
         txs.push(...response.transactions
             .filter(tx => {
                 return tx.outputs.some(output => {
                     switch (filterOption.script_type) {
                         case "lock":
-                            return filterOption.filter_hash_type == undefined || output.lock.hash_type == filterOption.filter_hash_type
+                            return filterOption.filter_hash_type == undefined || output.lock.hashType == filterOption.filter_hash_type
                         case "type":
-                            return output.type != null && (filterOption.filter_hash_type == undefined || output.type.hash_type == filterOption.filter_hash_type)
+                            return output.type != null && (filterOption.filter_hash_type == undefined || output.type.hashType == filterOption.filter_hash_type)
                         default:
-                            return (filterOption.filter_hash_type == undefined || output.lock.hash_type == filterOption.filter_hash_type) || (output.type != null && (filterOption.filter_hash_type == undefined || output.type.hash_type == filterOption.filter_hash_type))
+                            return (filterOption.filter_hash_type == undefined || output.lock.hashType == filterOption.filter_hash_type) || (output.type != null && (filterOption.filter_hash_type == undefined || output.type.hashType == filterOption.filter_hash_type))
                     }
                 })
             }).map(tx => tx.hash)

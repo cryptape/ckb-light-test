@@ -1,16 +1,21 @@
 import {getTestDataByFile} from "./test_data";
-import {CKB_LIGHT_RPC_URL, CKB_RPC_INDEX_URL, CkbClientNode} from "../../config/config";
-import {BI} from "@ckb-lumos/lumos";
-import {getTransactions, setScripts, waitScriptsUpdate,} from "../../rpc";
+import {CKB_LIGHT_RPC_URL, CKB_RPC_INDEX_URL, CkbClientNode, lightClientRPC} from "../../config/config";
+import {BI} from "@ckb-lumos/bi";
 import {getTransactionList} from "../../service/txService";
 import {expect} from "chai";
 import * as fs from "fs";
+import {waitScriptsUpdate} from "../../service/lightService";
 
 describe('demo', function () {
     this.timeout(1000000000)
     let idx = 0
     let step = 1
 
+    before(async ()=>{
+        await CkbClientNode.clean()
+        await CkbClientNode.start()
+        await CkbClientNode.status()
+    })
     function SkipStep(step: number): boolean {
         idx++
         return (idx % step) == 0
@@ -19,7 +24,7 @@ describe('demo', function () {
 
     function getTestDataPath(): string[] {
         return fs.readdirSync("resource").map(file => "resource/" + file)
-        // return ["resource/test-1755000-1760000.json"]
+        // return ["resource/test-1100000-1150000.json"]
     }
 
     let files = getTestDataPath()
@@ -27,12 +32,12 @@ describe('demo', function () {
 
     for (let i = 0; i < files.length; i++) {
         if (!SkipStep(step)) continue;
+        if(files[i].search("json") == -1) continue;
         describe(files[i], function () {
             let td;
             before(async () => {
-                await CkbClientNode.clean()
-                await CkbClientNode.start()
-                await CkbClientNode.status()
+                console.log("file:",files[i])
+
                 td = getTestDataByFile(files[i])
                 let setScriptData = td.getScriptSet().map(t => {
                     let minUpdateNum: BI
@@ -47,7 +52,7 @@ describe('demo', function () {
                         block_number: minUpdateNum.toHexString()
                     }
                 })
-                await setScripts(setScriptData)
+                await lightClientRPC.setScripts(setScriptData)
                 await waitScriptsUpdate(BI.from(td.end_block_num))
             })
 
@@ -87,29 +92,41 @@ describe('demo', function () {
                 console.log('getTransactionList Length:', indexTotalTxs.size)
                 console.log('td.script_types length:', tdList.size)
                 console.log('light client length:', lightTotalTxs.size)
-                let diffIndexHashNotInTdListResult = [];
-                indexTotalTxs.forEach(tx => {
 
-                    if (!tdList.has(tx)) {
-                        diffIndexHashNotInTdListResult.push(tx)
+                let outPutNotInLightList = [];
+                tdList.forEach(tx =>{
+                    if(!lightTotalTxs.has(tx)){
+                        outPutNotInLightList.push(tx)
                     }
                 })
-                let diffLightNotInTdListResult = [];
-                lightTotalTxs.forEach(tx => {
-                    if (!tdList.has(tx)) {
-                        diffLightNotInTdListResult.push(tx)
-                    }
-                })
-                console.log('--- index not in td list -----')
-                diffIndexHashNotInTdListResult.forEach(txHash => {
-                    console.log("diff:", txHash)
-                })
-                console.log('---light not in td list  -----')
-                diffLightNotInTdListResult.forEach(txHash => {
-                    console.log("diff:", txHash)
-                })
-                expect(diffIndexHashNotInTdListResult.length).to.be.equal(diffLightNotInTdListResult.length)
-                expect(lightTotalTxs.size).to.be.gte(tdList.size)
+                console.log("===outPutNotInLightList====")
+                for (let j = 0; j < outPutNotInLightList.length; j++) {
+                    console.log(outPutNotInLightList[j])
+                }
+                expect(outPutNotInLightList.length).to.be.equal(0)
+                // let diffIndexHashNotInTdListResult = [];
+                // indexTotalTxs.forEach(tx => {
+                //
+                //     if (!tdList.has(tx)) {
+                //         diffIndexHashNotInTdListResult.push(tx)
+                //     }
+                // })
+                // let diffLightNotInTdListResult = [];
+                // lightTotalTxs.forEach(tx => {
+                //     if (!tdList.has(tx)) {
+                //         diffLightNotInTdListResult.push(tx)
+                //     }
+                // })
+                // console.log('--- index not in td list -----')
+                // diffIndexHashNotInTdListResult.forEach(txHash => {
+                //     console.log("diff:", txHash)
+                // })
+                // console.log('---light not in td list  -----')
+                // diffLightNotInTdListResult.forEach(txHash => {
+                //     console.log("diff:", txHash)
+                // })
+                // expect(diffIndexHashNotInTdListResult.length).to.be.equal(diffLightNotInTdListResult.length)
+                // expect(lightTotalTxs.size).to.be.gte(tdList.size)
             })
 
 

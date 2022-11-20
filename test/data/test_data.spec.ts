@@ -1,9 +1,15 @@
 import {genTestData, getTestDataByFile, writeTestData} from "./test_data";
 
 import * as fs from "fs";
+import {BI} from "@ckb-lumos/bi";
+import {waitScriptsUpdate} from "../../service/lightService";
 
 describe('test data', function () {
     this.timeout(100000000)
+
+    it("dd",async ()=>{
+        await waitScriptsUpdate(BI.from("999999999"))
+    })
 
     it.skip('get test data', async () => {
         // let height =BI.from((await getTipHeader(CKB_RPC_URL)).number).toNumber()

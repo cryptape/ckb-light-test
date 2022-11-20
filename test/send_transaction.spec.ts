@@ -1,6 +1,5 @@
 import {generateAccountFromPrivateKey, transfer} from "../service/transfer";
 import {ACCOUNT_PRIVATE, CKB_RPC_INDEX_URL, script} from "../config/config";
-import {getCells} from "../rpc";
 
 
 describe('send_transaction', function () {

@@ -1,53 +1,52 @@
-import {
-    getCells,
-    getCellsCapacity,
-    getScripts,
-    ScriptMsg,
-    ScriptObject,
-    setScripts,
-    waitScriptsUpdate
-} from "../../rpc";
+
 import {
     CKB_LIGHT_RPC_URL,
-    CKB_RPC_INDEX_URL,
+    CKB_RPC_INDEX_URL, lightClientRPC,
     MINER_SCRIPT,
     MINER_SCRIPT2,
     MINER_SCRIPT3,
     rpcCLient,
-    script
 } from "../../config/config";
-import {BI} from "@ckb-lumos/lumos";
+import {BI} from "@ckb-lumos/bi";
 import {getCellsByRange, getTransactionList} from "../../service/txService";
 import {HexString} from "@ckb-lumos/base/lib/primitive";
 import {expect} from "chai";
 import {Cell} from "@ckb-lumos/base/lib/api";
 import {getBlockNumByTxHash} from "../../service/transfer";
+import {Script} from "@ckb-lumos/base";
+import {checkScriptsInLightClient, getCellsCapacityRequest, waitScriptsUpdate} from "../../service/lightService";
+import {LightClientScript} from "_@ckb-lumos_light-client@0.20.0-alpha.0@@ckb-lumos/light-client/src/type";
+import {HexadecimalRange} from "_@ckb-lumos_lumos@0.19.0@@ckb-lumos/lumos";
 
 describe('monit miner test', function () {
     this.timeout(1000 * 10000000)
 
     let SkipNum = 15
-    let minerScripts: ScriptObject[] = [MINER_SCRIPT, MINER_SCRIPT2, MINER_SCRIPT3]
+    let minerScripts: Script[] = [MINER_SCRIPT, MINER_SCRIPT2, MINER_SCRIPT3]
     let step = 50000
     let ckb_tip_number = "0x6aa10b";
 
 
     let idx = 0
-    function SkipStep(step:number):boolean{
+
+    function SkipStep(step: number): boolean {
         idx++
-        return  (idx%step) == 0
+        return (idx % step) == 0
     }
 
     before(async () => {
-        let setScriptObjs: ScriptMsg[] = minerScripts.map(script => {
-            return {
-                script: script,
-                script_type: "lock",
-                block_number: "0x0"
-            }
-        })
-        await setScripts(setScriptObjs)
-        ckb_tip_number = await rpcCLient.get_tip_block_number()
+        if (!(await checkScriptsInLightClient(minerScripts))) {
+            let setScriptObjs: LightClientScript[] = minerScripts.map(script => {
+                return {
+                    script: script,
+                    scriptType: "lock",
+                    blockNumber: "0x0"
+                }
+            })
+            await lightClientRPC.setScripts(setScriptObjs)
+        }
+
+        ckb_tip_number = await rpcCLient.getTipBlockNumber()
         await waitScriptsUpdate(BI.from(6990015))
     })
 
@@ -78,8 +77,13 @@ describe('monit miner test', function () {
     describe('getCellsCapacity', function () {
         for (let i = 0; i < minerScripts.length; i++) {
             it('miner:' + minerScripts[i].args.substring(0, 6), async () => {
-                let capLightResult = await getCellsCapacity(minerScripts[i])
-                let indexResult = await getCellsCapacity(minerScripts[i], CKB_RPC_INDEX_URL)
+                let capLightResult = await getCellsCapacityRequest({
+                    script:minerScripts[i],
+                    scriptType:"lock"
+                })
+                let indexResult = await getCellsCapacityRequest({
+                    script:minerScripts[i],scriptType:"lock"
+                }, CKB_RPC_INDEX_URL)
                 console.log('light client cap:', BI.from(capLightResult).toNumber())
                 console.log('index client cap:', BI.from(indexResult.capacity).toNumber())
                 // expected 相差不大
@@ -95,7 +99,7 @@ describe('monit miner test', function () {
  * @param compareScript
  * @param block_range
  */
-async function compareTransactions(compareScript: ScriptObject, block_range: HexString[]) {
+async function compareTransactions(compareScript: Script, block_range: HexadecimalRange) {
     let height = await getScriptUpdateHeight()
     let lightCollectedTxsReq = getTransactionList(compareScript, "lock", undefined, CKB_LIGHT_RPC_URL, block_range)
     let indexCollectedTxs = await getTransactionList(compareScript, "lock", undefined, CKB_RPC_INDEX_URL, block_range)
@@ -115,7 +119,7 @@ async function compareTransactions(compareScript: ScriptObject, block_range: Hex
         for (let i = 0; i < indexNotInLightTxs.length; i++) {
             let tx = lightNotInIndexTxs[i]
             let currentHeight = await getBlockNumByTxHash(tx)
-            if (currentHeight.lt(height)){
+            if (currentHeight.lt(height)) {
                 lightNotUpdateTxs.push(tx)
             }
         }
@@ -141,7 +145,7 @@ async function compareTransactions(compareScript: ScriptObject, block_range: Hex
     expect(notEqTxs.length).to.be.equal(0)
 }
 
-async function compareCells(compareScript: ScriptObject, block_range: HexString[]) {
+async function compareCells(compareScript: Script, block_range: HexadecimalRange) {
     let height = await getScriptUpdateHeight()
     let lightCellsReq = getCellsByRange(compareScript, "lock", undefined, CKB_LIGHT_RPC_URL, block_range)
     let indexCells = await getCellsByRange(compareScript, "lock", undefined, CKB_RPC_INDEX_URL, block_range)
@@ -152,25 +156,25 @@ async function compareCells(compareScript: ScriptObject, block_range: HexString[
         let indexNotInLightTxs = indexCells.filter(indexIx => !lightCells.some(lightTx => compareCell(lightTx, indexIx)))
         console.log('== lightNotInIndexTxs ==')
         lightNotInIndexTxs.forEach(tx => console.log(
-            "blockNum:", tx.block_number,
-            " hash:", tx.out_point?.tx_hash,
-            " index:", tx.out_point?.index
+            "blockNum:", tx.blockNumber,
+            " hash:", tx.outPoint?.txHash,
+            " index:", tx.outPoint?.index
         ))
         console.log("== indexNotInLightTxs ==")
         indexNotInLightTxs.forEach(tx => console.log(
-            "blockNum:", tx.block_number,
-            " hash:", tx.out_point?.tx_hash,
-            " index:", tx.out_point?.index
+            "blockNum:", tx.blockNumber,
+            " hash:", tx.outPoint?.txHash,
+            " index:", tx.outPoint?.index
         ))
 
-        let lightNotUpdateCells = indexNotInLightTxs.filter(cell=>
-            BI.from(cell.block_number).lte(height)
+        let lightNotUpdateCells = indexNotInLightTxs.filter(cell =>
+            BI.from(cell.blockNumber).lte(height)
         )
         console.log("=== light not update ====")
         lightNotUpdateCells.forEach(tx => console.log(
-            "blockNum:", tx.block_number,
-            " hash:", tx.out_point?.tx_hash,
-            " index:", tx.out_point?.index
+            "blockNum:", tx.blockNumber,
+            " hash:", tx.outPoint?.txHash,
+            " index:", tx.outPoint?.index
         ))
         expect(lightNotUpdateCells.length).to.be.equal(0)
         return
@@ -186,15 +190,15 @@ async function compareCells(compareScript: ScriptObject, block_range: HexString[
         }
     }
     notEqList.forEach(notRqCell => {
-        console.log("light cell block:" + BI.from(notRqCell.lightCell.block_number).toNumber() + " tx:" + notRqCell.lightCell.out_point?.tx_hash + " index:" + notRqCell.lightCell.out_point?.index +
-            "index cell block:" + BI.from(notRqCell.indexCell.block_number).toNumber() + " tx:" + notRqCell.indexCell.out_point?.tx_hash + " index:" + notRqCell.indexCell.out_point?.index)
+        console.log("light cell block:" + BI.from(notRqCell.lightCell.blockNumber).toNumber() + " tx:" + notRqCell.lightCell.outPoint?.txHash + " index:" + notRqCell.lightCell.outPoint?.index +
+            "index cell block:" + BI.from(notRqCell.indexCell.blockNumber).toNumber() + " tx:" + notRqCell.indexCell.outPoint?.txHash + " index:" + notRqCell.indexCell.outPoint?.index)
     })
 
 }
 
 async function getScriptUpdateHeight(): Promise<BI> {
-    let height = (await getScripts()).reduce((total, current) => {
-        return BI.from(current.block_number).lt(total) ? BI.from(current.block_number) : total;
+    let height = (await lightClientRPC.getScripts()).reduce((total, current) => {
+        return BI.from(current.blockNumber).lt(total) ? BI.from(current.blockNumber) : total;
     }, BI.from("0xffffffffff"))
     if (height == BI.from("0xffffffffff")) {
         return BI.from(0)
@@ -203,12 +207,12 @@ async function getScriptUpdateHeight(): Promise<BI> {
 }
 
 function compareCell(a: Cell, b: Cell): boolean {
-    return (a.block_number == b.block_number &&
+    return (a.blockNumber == b.blockNumber &&
         a.data == b.data &&
-        a.cell_output.lock.args == b.cell_output.lock.args &&
-        a.cell_output.lock.code_hash == b.cell_output.lock.code_hash &&
-        a.cell_output.lock.hash_type == b.cell_output.lock.hash_type &&
-        a.out_point?.tx_hash == b.out_point?.tx_hash &&
-        a.out_point?.index == b.out_point?.index
+        a.cellOutput.lock.args == b.cellOutput.lock.args &&
+        a.cellOutput.lock.codeHash == b.cellOutput.lock.codeHash &&
+        a.cellOutput.lock.hashType == b.cellOutput.lock.hashType &&
+        a.outPoint?.txHash == b.outPoint?.txHash &&
+        a.outPoint?.index == b.outPoint?.index
     )
 }

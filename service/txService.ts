@@ -9,10 +9,6 @@ import {
     ScriptType
 } from "@ckb-lumos/ckb-indexer/lib/type";
 import {Script, utils} from "@ckb-lumos/base";
-import {
-    IndexerCell,
-    IndexerCellWithoutData
-} from "@ckb-lumos/ckb-indexer/src/type";
 
 
 export async function fetchTransactionUntilFetched(hash: string, ckbLightClientUrl, waitSize: number) {

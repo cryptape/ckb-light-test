@@ -27,7 +27,7 @@ import {
 import {CellDep} from "@ckb-lumos/base/lib/api";
 import {fetchTransactionUntilFetched} from "./txService";
 import {sendTransaction, waitScriptsUpdate} from "./lightService";
-import {LightClientScript} from "_@ckb-lumos_light-client@0.20.0-alpha.0@@ckb-lumos/light-client/src/type";
+import {LightClientScript} from "@ckb-lumos/light-client/src/type";
 
 const {ScriptValue} = values;
 

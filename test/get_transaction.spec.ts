@@ -9,7 +9,7 @@ import {generateAccountFromPrivateKey} from "../service/transfer";
 import {Transaction} from "@ckb-lumos/base/lib/api";
 import {Sleep} from "../service/util";
 import {getTransaction, waitScriptsUpdate} from "../service/lightService";
-import {LightClientScript} from "_@ckb-lumos_light-client@0.20.0-alpha.0@@ckb-lumos/light-client/src/type";
+import {LightClientScript} from "@ckb-lumos/light-client/src/type";
 
 describe('get_transaction', function () {
 

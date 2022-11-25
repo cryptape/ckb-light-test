@@ -15,8 +15,8 @@ import {Cell} from "@ckb-lumos/base/lib/api";
 import {getBlockNumByTxHash} from "../../service/transfer";
 import {Script} from "@ckb-lumos/base";
 import {checkScriptsInLightClient, getCellsCapacityRequest, waitScriptsUpdate} from "../../service/lightService";
-import {LightClientScript} from "_@ckb-lumos_light-client@0.20.0-alpha.0@@ckb-lumos/light-client/src/type";
-import {HexadecimalRange} from "_@ckb-lumos_lumos@0.19.0@@ckb-lumos/lumos";
+import {LightClientScript} from "@ckb-lumos/light-client/src/type";
+import {HexadecimalRange} from "@ckb-lumos/lumos";
 
 describe('monit miner test', function () {
     this.timeout(1000 * 10000000)

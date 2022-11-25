@@ -10,10 +10,11 @@
 
 
 import {Cell, HashType} from "@ckb-lumos/base/lib/api";
-import {BI, helpers} from "@ckb-lumos/lumos";
+import { helpers} from "@ckb-lumos/lumos";
 import {AGGRON4} from "./transfer";
 import {utils} from "@ckb-lumos/base";
-import {BIish} from "@ckb-lumos/bi";
+import {BI,BIish} from "@ckb-lumos/bi";
+import{ number, bytes } from "@ckb-lumos/codec"
 
 
 
@@ -29,7 +30,7 @@ export function issueTokenCell(from: string,amount :BIish):Cell {
                 args: utils.computeScriptHash(toScript)
             }
         },
-        data: utils.toBigUInt128LE(amount),
+        data:bytes.hexify(number.Uint128LE.pack(amount)),
     };
 }
 

@@ -10,26 +10,27 @@
 
 
 import {Cell, HashType} from "@ckb-lumos/base/lib/api";
-import {BI, helpers} from "@ckb-lumos/lumos";
+import { helpers} from "@ckb-lumos/lumos";
 import {AGGRON4} from "./transfer";
 import {utils} from "@ckb-lumos/base";
-import {BIish} from "@ckb-lumos/bi";
+import {BI,BIish} from "@ckb-lumos/bi";
+import{ number, bytes } from "@ckb-lumos/codec"
 
 
 
 export function issueTokenCell(from: string,amount :BIish):Cell {
     const toScript = helpers.parseAddress(from, {config: AGGRON4});
     return {
-        cell_output: {
-            capacity: BI.from(240).mul(100000000).toHexString(),
+        cellOutput: {
+            capacity: BI.from(150).mul(100000000).toHexString(),
             lock: toScript,
             type:{
-                code_hash: AGGRON4.SCRIPTS.SUDT.CODE_HASH,
-                hash_type: AGGRON4.SCRIPTS.SUDT.HASH_TYPE,
+                codeHash: AGGRON4.SCRIPTS.SUDT.CODE_HASH,
+                hashType: AGGRON4.SCRIPTS.SUDT.HASH_TYPE,
                 args: utils.computeScriptHash(toScript)
             }
         },
-        data: utils.toBigUInt128LE(amount),
+        data:bytes.hexify(number.Uint128LE.pack(amount)),
     };
 }
 

@@ -57,7 +57,7 @@ export async function upgradeContract(privateKey:string, SCRIPTBINARY: Uint8Arra
     const message = txSkeleton.get("signingEntries").get(0)?.message;
     const Sig = hd.key.signRecoverable(message!, ACCOUNT_PRIVATE);
     let tx1 = helpers.sealTransaction(txSkeleton, [Sig]);
-    let tx =  await rpc.send_transaction(tx1, "passthrough");
+    let tx =  await rpc.sendTransaction(tx1, "passthrough");
     console.log('tx:',tx)
     return deployResult.scriptConfig
 
@@ -106,7 +106,7 @@ export async function deployContractByArray(privateKey: string, SCRIPTBINARY: Ui
     const message = txSkeleton.get("signingEntries").get(0)?.message;
     const Sig = hd.key.signRecoverable(message!, ACCOUNT_PRIVATE);
     let tx1 = helpers.sealTransaction(txSkeleton, [Sig]);
-    let tx =  await rpc.send_transaction(tx1, "passthrough");
+    let tx =  await rpc.sendTransaction(tx1, "passthrough");
     console.log('tx:',tx)
     return deployResult.scriptConfig
 }
@@ -155,8 +155,8 @@ export async function deployContractByArray(privateKey: string, SCRIPTBINARY: Ui
 
 function subFee(txSkeleton: TransactionSkeletonType): TransactionSkeletonType {
     txSkeleton.get("outputs").map(function (outPut, idx) {
-        if (outPut.cell_output.type == null) {
-            outPut.cell_output.capacity = BI.from(outPut.cell_output.capacity).sub(BI.from(FEE)).toHexString()
+        if (outPut.cellOutput.type == null) {
+            outPut.cellOutput.capacity = BI.from(outPut.cellOutput.capacity).sub(BI.from(FEE)).toHexString()
             txSkeleton.get("outputs").set(idx, outPut)
             return txSkeleton
         }

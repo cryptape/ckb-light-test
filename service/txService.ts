@@ -7,12 +7,12 @@ import {LightClientRPC} from "@ckb-lumos/light-client";
 import {FetchFlag} from "@ckb-lumos/light-client/lib/type";
 import {
     ScriptType
-} from "_@ckb-lumos_ckb-indexer@0.20.0-alpha.0@@ckb-lumos/ckb-indexer/lib/type";
-import {Script, utils} from "_@ckb-lumos_base@0.20.0-alpha.0@@ckb-lumos/base";
+} from "@ckb-lumos/ckb-indexer/lib/type";
+import {Script, utils} from "@ckb-lumos/base";
 import {
     IndexerCell,
     IndexerCellWithoutData
-} from "_@ckb-lumos_ckb-indexer@0.20.0-alpha.0@@ckb-lumos/ckb-indexer/src/type";
+} from "@ckb-lumos/ckb-indexer/src/type";
 
 
 export async function fetchTransactionUntilFetched(hash: string, ckbLightClientUrl, waitSize: number) {

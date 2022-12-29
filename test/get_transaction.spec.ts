@@ -10,7 +10,6 @@ import {Transaction} from "@ckb-lumos/base/lib/api";
 import {Sleep} from "../service/util";
 import {getTransaction, waitScriptsUpdate} from "../service/lightService";
 import {LightClientScript} from "@ckb-lumos/light-client/lib/type";
-import rpc from "../lib/lumos/packages/rpc/src/exceptions/rpc";
 
 describe('get_transaction', function () {
 

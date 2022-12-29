@@ -1,7 +1,7 @@
 import {
     ACCOUNT_PRIVATE,
     CKB_RPC_INDEX_URL,
-    CkbClientNode, indexer,
+    indexer,
     LightCli,
     lightClientRPC,
     MINER_SCRIPT
@@ -54,7 +54,6 @@ describe('cli', function () {
 
         it("demo", async () => {
             let account = generateAccountFromPrivateKey(ACCOUNT_PRIVATE)
-
             await syncAccountBalanceByCells(account.address, BI.from(1001).mul(10000000))
             let to = account.address
             let cap = "100.1"

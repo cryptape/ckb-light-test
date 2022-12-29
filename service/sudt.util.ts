@@ -1,10 +1,9 @@
 import {BIish} from "@ckb-lumos/bi";
-import {BI, commons, hd, helpers, Indexer, RPC} from "@ckb-lumos/lumos";
-import {ACCOUNT_PRIVATE, CKB_RPC_INDEX_URL, CKB_RPC_URL, FEE, FeeRate} from "../config/config";
+import { commons, hd, helpers, Indexer, RPC} from "@ckb-lumos/lumos";
+import {ACCOUNT_PRIVATE, CKB_RPC_INDEX_URL, CKB_RPC_URL, FeeRate} from "../config/config";
 import {AGGRON4, generateAccountFromPrivateKey} from "./transfer";
 import {sudt} from "@ckb-lumos/common-scripts";
 import {utils} from "@ckb-lumos/base";
-import {TransactionSkeletonType} from "@ckb-lumos/helpers";
 
 const ckbRpcUrl = CKB_RPC_URL;
 const ckbRpcIndexUrl = CKB_RPC_INDEX_URL;

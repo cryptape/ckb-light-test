@@ -8,7 +8,7 @@ import {
 } from "../config/config";
 
 import {expect} from "chai";
-import { RPC} from "@ckb-lumos/lumos";
+import {RPC} from "@ckb-lumos/lumos";
 import {BI} from "@ckb-lumos/bi";
 import {Output} from "@ckb-lumos/base/lib/api";
 import {AGGRON4, generateAccountFromPrivateKey, getBlockNumByTxHash, send_tx} from "../service/transfer";
@@ -41,7 +41,6 @@ describe('scenes', function () {
                 let response = await lightClientRPC.getScripts()
                 expect(response.toString()).to.be.equal('')
             })
-
         });
         describe('get_tip_header', function () {
             it('should return not null', async () => {
@@ -56,17 +55,18 @@ describe('scenes', function () {
             it('not exit tx ,should return null', async () => {
                 let response = await getTransaction("0x5be494190c1173bc7058dfeb9aa2420ac0a91df5634321298079e7f3765011f9")
                 console.log('response:', response)
-                expect(response).to.be.equal(null)
+                expect(response.transaction).to.be.equal(null)
             })
 
             it('0 tx,should return hash', async () => {
                 let txs = await getTransactionsByBlockNum(0, rpcCLient)
                 let txResponses = txs.map(async (tx) => {
-                    return await getTransaction(tx)
+                    return await rpcCLient.getTransaction(tx)
                 })
+                let genTx = await lightClientRPC.getGenesisBlock()
                 for (let i = 0; i < txResponses.length; i++) {
                     let response = await txResponses[i]
-                    expect(response.header.number).to.be.equal("0x0")
+                    expect(response.txStatus.blockHash).to.be.equal(genTx.header.hash)
                 }
             })
 
@@ -75,7 +75,7 @@ describe('scenes', function () {
                 let txs = await getTransactionsByBlockNum(BI.from(header.number).toNumber(), rpcCLient)
                 for (const tx of txs) {
                     let response = await getTransaction(tx)
-                    expect(response).to.be.equal(null)
+                    expect(response.transaction).to.be.equal(null)
                 }
             })
         });
@@ -248,7 +248,7 @@ describe('scenes', function () {
                         continue
                     }
                     let result = await getTransaction(cellsIndex.objects[i].outPoint.txHash)
-                    expect(result).to.be.equal(null)
+                    expect(result.transaction).to.be.equal(null)
                 }
 
             })
@@ -288,15 +288,15 @@ describe('scenes', function () {
                 const otherHashButInSameBlock = "0x4aef0c97389906f76fcf0214692df30aebbdd1e0a47a02c56cd1f88f404070c5"
                 let containsMinerScriptResponse = await getTransaction(containsMinerScriptHash)
                 let otherHashButInSameBlockResponse = await getTransaction(otherHashButInSameBlock)
-                expect(containsMinerScriptResponse).to.be.not.equal(null)
-                expect(otherHashButInSameBlockResponse).to.be.equal(null)
+                expect(containsMinerScriptResponse.transaction).to.be.not.equal(null)
+                expect(otherHashButInSameBlockResponse.transaction).to.be.equal(null)
             })
             it('query not collected hash,should return null', async () => {
                 let header = await lightClientRPC.getTipHeader()
                 let txs = await getTransactionsByBlockNum(BI.from(header.number).toNumber(), rpcCLient)
                 for (let i = 0; i < txs.length; i++) {
                     let response = await getTransaction(txs[i])
-                    expect(response).to.be.equal(null)
+                    expect(response.transaction).to.be.equal(null)
                 }
 
             })
@@ -317,15 +317,15 @@ describe('scenes', function () {
             })
             it('query cells for the same transaction but not collected', async () => {
 
-                let notCollectScript:Script = {
+                let notCollectScript: Script = {
                     codeHash: "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8",
                     hashType: "type",
                     args: "0x886d23a7858f12ebf924baaacd774a5e2cf81132"
                 }
                 let cells = await lightClientRPC.getCells({
-                    script:notCollectScript,
-                    scriptType:"lock"
-                },"asc","0xfff")
+                    script: notCollectScript,
+                    scriptType: "lock"
+                }, "asc", "0xfff")
                 expect(cells.objects.length).to.be.equal(0)
             })
         });
@@ -340,7 +340,7 @@ describe('scenes', function () {
                         blockRange: [BI.from(16094).toHexString(), BI.from(16096).toHexString()],
                     },
                     scriptType: "lock",
-                }, "asc","0xfff")
+                }, "asc", "0xfff")
 
                 let txs2 = await lightClientRPC.getTransactions({
                     script: MINER_SCRIPT3,
@@ -348,7 +348,7 @@ describe('scenes', function () {
                         blockRange: [BI.from(16000).toHexString(), BI.from(16196).toHexString()],
                     },
                     scriptType: "lock",
-                }, "asc","0xfff", txs1.lastCursor)
+                }, "asc", "0xfff", txs1.lastCursor)
                 expect(txs1.objects.length).to.be.equal(100)
                 expect(txs2.objects.length).to.be.equal(100)
             })
@@ -357,7 +357,7 @@ describe('scenes', function () {
 
             it('get capacity，should > 0', async () => {
                 let capacityOnSync = await getCellsCapacityRequest({
-                    script:MINER_SCRIPT3,scriptType:"lock"
+                    script: MINER_SCRIPT3, scriptType: "lock"
                 })
                 expect(BI.from(capacityOnSync.capacity).toNumber()).to.be.gt(0)
             })
@@ -446,7 +446,7 @@ describe('scenes', function () {
                 it('高度未达到上次set_script,get_cell收集的数量不变', async () => {
                     for (let i = 0; i < 100; i++) {
                         let capacity = await getCellsCapacityRequest({
-                            script:MINER_SCRIPT3,scriptType:"lock"
+                            script: MINER_SCRIPT3, scriptType: "lock"
                         })
                         let height = await getScriptsHeight()
                         console.log('height:', height.toNumber(), ' cap:', BI.from(capacity.capacity).toNumber())
@@ -465,7 +465,7 @@ describe('scenes', function () {
 
                 it('should > 0', async () => {
                     let result = await getCellsCapacityRequest({
-                        script:MINER_SCRIPT3,scriptType:"lock"
+                        script: MINER_SCRIPT3, scriptType: "lock"
                     })
                     expect(BI.from(result.capacity).toNumber()).to.be.gt(1)
                 })
@@ -488,11 +488,11 @@ describe('scenes', function () {
             describe('getCellsCapacity', function () {
                 it('The previous script will not continue to update', async () => {
                     let response = await getCellsCapacityRequest({
-                        script:MINER_SCRIPT3,scriptType:"lock"
+                        script: MINER_SCRIPT3, scriptType: "lock"
                     })
                     await Sleep(1000 * 10)
                     let response2 = await getCellsCapacityRequest({
-                        script:MINER_SCRIPT3,scriptType:"lock"
+                        script: MINER_SCRIPT3, scriptType: "lock"
                     })
                     expect(response.capacity).to.be.equal(response2.capacity)
                 })
@@ -543,8 +543,8 @@ async function getLiveOutputByTx(tx: string, rpc: RPC): Promise<Output[]> {
 async function getTxByScript(scriptObj: Script) {
     let response = await lightClientRPC.getTransactions({
         groupByTransaction: true, script: scriptObj, scriptType: "lock"
-    }, "asc","0xfff")
-    return response.objects.map(tx => tx.txHash)
+    }, "asc", "0xfff")
+    return response.objects.map(tx => tx.transaction.hash)
 }
 
 async function getScriptsHeight(): Promise<BI> {
@@ -559,7 +559,7 @@ export async function getTransactionsLength(scriptObject: Script, lastCursor: st
             script: scriptObject,
             scriptType: "lock",
             groupByTransaction: true
-        }, "asc","0xfff",lastCursor)
+        }, "asc", "0xfff", lastCursor)
         if (result.objects.length == 0) {
             break
         }

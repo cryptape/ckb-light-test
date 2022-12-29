@@ -9,16 +9,15 @@ import {
 } from "../../config/config";
 import {BI} from "@ckb-lumos/bi";
 import {getCellsByRange, getTransactionList} from "../../service/txService";
-import {HexString} from "@ckb-lumos/base/lib/primitive";
 import {expect} from "chai";
 import {Cell} from "@ckb-lumos/base/lib/api";
 import {getBlockNumByTxHash} from "../../service/transfer";
 import {Script} from "@ckb-lumos/base";
 import {checkScriptsInLightClient, getCellsCapacityRequest, waitScriptsUpdate} from "../../service/lightService";
-import {LightClientScript} from "_@ckb-lumos_light-client@0.20.0-alpha.0@@ckb-lumos/light-client/src/type";
-import {HexadecimalRange} from "_@ckb-lumos_lumos@0.19.0@@ckb-lumos/lumos";
+import {LightClientScript} from "@ckb-lumos/light-client/src/type";
+import {HexadecimalRange} from "@ckb-lumos/lumos";
 
-describe('monit miner test', function () {
+describe('monit miner test 8', function () {
     this.timeout(1000 * 10000000)
 
     let SkipNum = 15
@@ -46,7 +45,7 @@ describe('monit miner test', function () {
             await lightClientRPC.setScripts(setScriptObjs)
         }
 
-        ckb_tip_number = await rpcCLient.getTipBlockNumber()
+        // ckb_tip_number = await rpcCLient.getTipBlockNumber()
         await waitScriptsUpdate(BI.from(6990015))
     })
 

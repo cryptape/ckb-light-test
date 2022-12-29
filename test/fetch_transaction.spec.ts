@@ -41,9 +41,6 @@ describe('fetch_transaction', function () {
     //     })
     //     await waitFetchedHeaderStatusChange(tx,"fetched",10000)
     // });
-    it("ddd",async ()=>{
-        // await getTransactionWaitCommit("0x6660ed8ec877ede4add1d44202de1fbcda053c902edd0b37568fcb9fb0e7b890",CKB_RPC_URL,1000)
-    })
 });
 
 

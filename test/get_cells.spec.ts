@@ -1,7 +1,7 @@
 import {
     ACCOUNT_PRIVATE, EVERY_ONE_CAN_PAY_TYPE_ID,
     CKB_LIGHT_RPC_URL,
-    CKB_RPC_URL, MINER_SCRIPT, CKB_RPC_INDEX_URL, lightClientRPC, rpcCLient, indexer, indexerMockLightRpc
+    CKB_RPC_URL, MINER_SCRIPT, CKB_RPC_INDEX_URL, lightClientRPC, rpcCLient, indexerMockLightRpc
 } from "../config/config";
 import {AGGRON4, generateAccountFromPrivateKey, getBlockNumByTxHash, send_tx} from "../service/transfer";
 import {BI} from "@ckb-lumos/bi";
@@ -625,15 +625,14 @@ describe('get_cell', function () {
             })
         });
         describe('limit', function () {
-            it('0', async () => {
-                let cells = await getCellsRequest({
+            it('0,should return error that limit should be greater than 0', async () => {
+                 await getCellsReturnFailed({
                     limit: "0x0", order: "asc",
                     searchKey: {
                         script: MINER_SCRIPT,
                         scriptType: "lock"
                     }
-                })
-                expect(cells.objects.length).to.be.equal(0)
+                },CKB_LIGHT_RPC_URL)
             })
             it('1', async () => {
                 let cells = await getCellsRequest({

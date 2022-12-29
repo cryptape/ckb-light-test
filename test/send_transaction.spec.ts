@@ -14,7 +14,7 @@ describe('send_transaction', function () {
     })
 
     it('发送一笔包含已经用过cell的交易', async () => {
-        600000
+
     })
 
     it('发送一笔执行会报错的交易', async () => {

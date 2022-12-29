@@ -1,4 +1,4 @@
-import {utils, Script, ScriptWrapper, HexString} from "@ckb-lumos/base";
+import { ScriptWrapper} from "@ckb-lumos/base";
 import fetch from "cross-fetch";
 import { RPC_DEBUG} from "../config/config";
 const RPC_DEBUG_SERVICE = RPC_DEBUG
@@ -82,6 +82,9 @@ const request = async (
     const data = await res.json();
 
     if (data.error !== undefined) {
+        if (RPC_DEBUG_SERVICE) {
+            console.log( JSON.stringify(data.error))
+        }
         throw new Error(
             `light client request rpc failed with error: ${JSON.stringify(
                 data.error

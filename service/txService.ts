@@ -5,14 +5,9 @@ import {BI, HexadecimalRange} from "@ckb-lumos/lumos";
 import {CKB_LIGHT_RPC_URL, FEE, RPC_DEBUG} from "../config/config";
 import {LightClientRPC} from "@ckb-lumos/light-client";
 import {FetchFlag} from "@ckb-lumos/light-client/lib/type";
-import {
-    ScriptType
-} from "_@ckb-lumos_ckb-indexer@0.20.0-alpha.0@@ckb-lumos/ckb-indexer/lib/type";
-import {Script, utils} from "_@ckb-lumos_base@0.20.0-alpha.0@@ckb-lumos/base";
-import {
-    IndexerCell,
-    IndexerCellWithoutData
-} from "_@ckb-lumos_ckb-indexer@0.20.0-alpha.0@@ckb-lumos/ckb-indexer/src/type";
+import {Script, utils} from "@ckb-lumos/base";
+import {RPC} from "@ckb-lumos/rpc/lib/types/rpc";
+import ScriptType = RPC.ScriptType;
 
 
 export async function fetchTransactionUntilFetched(hash: string, ckbLightClientUrl, waitSize: number) {
@@ -133,11 +128,11 @@ export async function getTransactionList(scriptObject: Script, script_type: Scri
         }
         for (let i = 0; i < result.objects.length; i++) {
             let tx = result.objects[i]
-            if (tx.txHash != null) {
-                txList.push(tx.txHash)
+            if (tx.transaction.hash != null) {
+                txList.push(tx.transaction.hash)
                 continue
             }
-            txList.push(tx.txHash)
+            txList.push(tx.transaction.hash)
         }
         lastCursor = result.lastCursor
         if (RPC_DEBUG) {
@@ -184,7 +179,7 @@ export async function getCellsByRange(scriptObject: Script, script_type: ScriptT
             filter: {
                 blockRange: block_range
             }
-        }, "asc", "0xfff")
+        }, "asc", "0xfff",lastCursor)
         if (result.objects.length == 0) {
             break
         }

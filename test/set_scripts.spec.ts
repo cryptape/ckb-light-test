@@ -1,9 +1,9 @@
 import {expect} from 'chai'
-import {CkbClientNode, lightClientRPC, MINER_SCRIPT, rpcCLient} from "../config/config";
+import { lightClientRPC, rpcCLient} from "../config/config";
 import {AGGRON4} from "../service/transfer";
 import {Script} from "@ckb-lumos/base";
 import {BI} from "@ckb-lumos/bi";
-import {LightClientScript} from "_@ckb-lumos_light-client@0.20.0-alpha.0@@ckb-lumos/light-client/src/type";
+import {LightClientScript} from "@ckb-lumos/light-client/src/type";
 import {waitScriptsUpdate} from "../service/lightService";
 
 describe('set_scripts', function () {

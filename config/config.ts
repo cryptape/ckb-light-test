@@ -10,18 +10,18 @@ const CKB_DEV_PATH = "tmp/startBlockchain/ckbDevWithIndexAndeLightClient/ckb/tar
 const CKB_DEV_INDEX_PATH = "tmp/startBlockchain/ckbDevWithIndexAndeLightClient/ckb-indexer/target/release"
 const CKB_DEV_LIGHT_CLIENT_PATH = "tmp/startBlockchain/ckbDevWithIndexAndeLightClient/ckb-light-client/target/release"
 
-const CKB_DEV_RPC_URL = "http://localhost:8114";
-const CKB_DEV_RPC_INDEX_URL = "http://localhost:8116";
+const CKB_DEV_RPC_URL = "https://testnet.ckbapp.dev/";
+const CKB_DEV_RPC_INDEX_URL = "https://testnet.ckbapp.dev/";
 
 const RPC_DEBUG = true
-const CKB_RPC_URL = "http://localhost:8114";
+const CKB_RPC_URL = "https://testnet.ckbapp.dev/";
 // const CKB_RPC_URL = CKB_DEV_RPC_URL;
-const CKB_RPC_INDEX_URL = "http://localhost:8116";
+const CKB_RPC_INDEX_URL = "https://testnet.ckbapp.dev/";
 // const CKB_RPC_INDEX_URL = CKB_DEV_RPC_INDEX_URL;
-const CKB_LIGHT_RPC_URL = "http://localhost:9000";
+const CKB_LIGHT_RPC_URL = "http://127.0.0.1:9000";
 export enum FeeRate {
     SLOW = 1000,
-    NORMAL = 10000,
+    NORMAL = 1000000,
     FAST = 10000000
 }
 

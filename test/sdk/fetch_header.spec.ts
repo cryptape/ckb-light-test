@@ -1,12 +1,11 @@
-import {lightClientRPC, rpcCLient} from "../../config/config";
-import {expect} from "chai";
+import { rpcCLient} from "../../config/config";
 import {FetchFlag} from "@ckb-lumos/light-client/lib/type";
 import {waitFetchedHeaderStatusChange} from "../fetch_header.spec";
 
 describe('sdk:fetch_header', function () {
     it("not found",async ()=>{
         const hash  = randomHash()
-        let response = await waitFetchedHeaderStatusChange(hash,"not_found",100)
+        let response = await waitFetchedHeaderStatusChange(hash,FetchFlag.NotFound,100)
         console.log("res:",response)
 
     })

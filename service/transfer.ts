@@ -27,7 +27,8 @@ import {
 import {CellDep} from "@ckb-lumos/base/lib/api";
 import {fetchTransactionUntilFetched} from "./txService";
 import {sendTransaction, waitScriptsUpdate} from "./lightService";
-import {LightClientScript} from "_@ckb-lumos_light-client@0.20.0-alpha.0@@ckb-lumos/light-client/src/type";
+import {estimate_cycles, send_transaction} from "./ckbService";
+import {LightClientScript} from "@ckb-lumos/light-client/lib/type";
 
 const {ScriptValue} = values;
 
@@ -177,7 +178,7 @@ export class TransferService {
     }
 }
 
-type Account = {
+export type Account = {
     lockScript: Script;
     address: Address;
     pubKey: string;
@@ -192,6 +193,7 @@ export const generateAccountFromPrivateKey = (privKey: string): Account => {
         args: args,
     };
     const address = helpers.generateAddress(lockScript, {config: AGGRON4});
+    console.log("address:",address)
     return {
         lockScript,
         address,
@@ -333,6 +335,107 @@ export async function send_tx_with_input(options: Options): Promise<string> {
     return hash;
 }
 
+export async function buildTx(options: Options): Promise<Transaction> {
+    let txSkeleton = helpers.TransactionSkeleton({});
+    const fromScript = helpers.parseAddress(options.from, {config: AGGRON4});
+
+    let neededCapacity = BI.from(0)
+    for (let i = 0; i < options.outputCells.length; i++) {
+        neededCapacity = neededCapacity.add(options.outputCells[i].cellOutput.capacity)
+    }
+    let collectedSum = BI.from(0);
+    const collected: Cell[] = [];
+    const collector = defaultIndexer.collector({lock: fromScript, type: "empty"});
+    for await (const cell of collector.collect()) {
+        collectedSum = collectedSum.add(cell.cellOutput.capacity);
+        collected.push(cell);
+        if (collectedSum >= neededCapacity) break;
+    }
+    console.log('total cell balance: ', collectedSum.toString())
+
+    if (collectedSum < neededCapacity) {
+        throw new Error("Not enough CKB");
+    }
+
+    if (collectedSum.sub(neededCapacity).sub(FeeRate.NORMAL).gt(BI.from('0'))) {
+        const changeOutput: Cell = {
+            cellOutput: {
+                capacity: collectedSum.sub(neededCapacity).sub(FeeRate.NORMAL).toHexString(),
+                lock: fromScript,
+            },
+            data: "0x",
+        };
+        console.log('gen out put extra value ')
+        if (collectedSum.sub(neededCapacity).sub(FeeRate.NORMAL).gt(6100000000)) {
+            //expected occupied capacity (0x16b969d00)
+            txSkeleton = txSkeleton.update("outputs", (outputs) => outputs.push(changeOutput));
+        } else {
+            options.outputCells[0].cellOutput.capacity = collectedSum.sub(neededCapacity).sub(FeeRate.NORMAL).add(options.outputCells[0].cellOutput.capacity).toHexString()
+        }
+    }
+
+    let SECP256K1_BLAKE160_HASH = (await defaultRpc.getBlockByNumber("0x0")).transactions[1].hash
+
+    txSkeleton = txSkeleton.update("outputs", (outputs) => outputs.push(...options.outputCells));
+    txSkeleton = txSkeleton.update("inputs", (inputs) => inputs.push(...collected));
+    txSkeleton = txSkeleton.update("cellDeps", (cellDeps) =>
+        cellDeps.push(...[
+            {
+                outPoint: {
+                    txHash: SECP256K1_BLAKE160_HASH,
+                    index: AGGRON4.SCRIPTS.SECP256K1_BLAKE160.INDEX,
+                },
+                depType: AGGRON4.SCRIPTS.SECP256K1_BLAKE160.DEP_TYPE,
+            }
+        ])
+    );
+    txSkeleton = txSkeleton.update("cellDeps", (cellDeps) => cellDeps.push(...options.deps));
+
+    const firstIndex = txSkeleton
+        .get("inputs")
+        .findIndex((input) =>
+            new ScriptValue(input.cellOutput.lock, {validate: false}).equals(
+                new ScriptValue(fromScript, {validate: false})
+            )
+        );
+    if (firstIndex !== -1) {
+        while (firstIndex >= txSkeleton.get("witnesses").size) {
+            txSkeleton = txSkeleton.update("witnesses", (witnesses) => witnesses.push("0x"));
+        }
+        let witness: string = txSkeleton.get("witnesses").get(firstIndex)!;
+        const newWitnessArgs: WitnessArgs = {
+            /* 65-byte zeros in hex */
+            lock:
+                "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        };
+        if (witness !== "0x") {
+            const witnessArgs = blockchain.WitnessArgs.unpack(bytes.bytify(witness))
+            const lock = witnessArgs.lock;
+            if (!!lock && lock !== newWitnessArgs.lock) {
+                throw new Error("Lock field in first witness is set aside for signature!");
+            }
+            const inputType = witnessArgs.inputType;
+            if (!!inputType) {
+                newWitnessArgs.inputType = inputType;
+            }
+            const outputType = witnessArgs.outputType;
+            if (!!outputType) {
+                newWitnessArgs.outputType = outputType;
+            }
+        }
+        witness = bytes.hexify(blockchain.WitnessArgs.pack(newWitnessArgs))
+
+
+        txSkeleton = txSkeleton.update("witnesses", (witnesses) => witnesses.set(firstIndex, witness));
+    }
+
+
+    txSkeleton = commons.common.prepareSigningEntries(txSkeleton);
+    const message = txSkeleton.get("signingEntries").get(0)?.message;
+    const Sig = hd.key.signRecoverable(message!, options.privKey);
+    return helpers.sealTransaction(txSkeleton, [Sig]);
+}
+
 
 export async function send_tx_options(options: Options): Promise<string> {
     let txSkeleton = helpers.TransactionSkeleton({});
@@ -446,17 +549,24 @@ export async function send_tx(options: Options): Promise<string> {
     for (let i = 0; i < options.outputCells.length; i++) {
         neededCapacity = neededCapacity.add(options.outputCells[i].cellOutput.capacity)
     }
+    console.log("need Cap:", neededCapacity.toNumber())
     let collectedSum = BI.from(0);
     const collected: Cell[] = [];
     const collector = defaultIndexer.collector({lock: fromScript, type: "empty"});
     for await (const cell of collector.collect()) {
+        if(cell.outPoint.txHash == "0x636b6b066259cd36e241999caf3d1f18344f4dd013cc871b7a71832d15706b6b"){
+            continue;
+        }
         collectedSum = collectedSum.add(cell.cellOutput.capacity);
         collected.push(cell);
-        if (collectedSum >= neededCapacity) break;
+        if (collectedSum.gt(neededCapacity)) {
+            console.log("break collect")
+            break;
+        }
     }
     console.log('total cell balance: ', collectedSum.toString())
 
-    if (collectedSum < neededCapacity) {
+    if (collectedSum.lt(neededCapacity)) {
         throw new Error("Not enough CKB");
     }
 
@@ -547,7 +657,10 @@ export async function send_tx(options: Options): Promise<string> {
         console.log("The CKB_LIGHT_RPC_URL transaction hash is", hash);
         return hash;
     }
-    const hash = await defaultRpc.sendTransaction(tx, "passthrough");
+    console.log("tx:", JSON.stringify(tx))
+    const cycle = await estimate_cycles(tx)
+    console.log("cycle:", cycle)
+    const hash = await send_transaction(tx, CKB_RPC_URL);
     console.log("The transaction hash is", hash);
 
     return hash;

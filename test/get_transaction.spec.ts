@@ -9,7 +9,8 @@ import {generateAccountFromPrivateKey} from "../service/transfer";
 import {Transaction} from "@ckb-lumos/base/lib/api";
 import {Sleep} from "../service/util";
 import {getTransaction, waitScriptsUpdate} from "../service/lightService";
-import {LightClientScript} from "_@ckb-lumos_light-client@0.20.0-alpha.0@@ckb-lumos/light-client/src/type";
+import {LightClientScript} from "@ckb-lumos/light-client/lib/type";
+import rpc from "../lib/lumos/packages/rpc/src/exceptions/rpc";
 
 describe('get_transaction', function () {
 
@@ -30,7 +31,7 @@ describe('get_transaction', function () {
         //get txHash
         let txs = await rpcCLient.getBlockByNumber(header.number)
         console.log('txs:', txs)
-        if (txs == undefined) {
+        if (txs.transactions == undefined) {
             expect("").to.be.equal("get_block_by_number failed ")
             return
         }
@@ -44,8 +45,8 @@ describe('get_transaction', function () {
             return
         }
         //
-        let response = await getTransaction(txHash)
-        expect(response).to.be.equal(null)
+        let response = await lightClientRPC.getTransaction(txHash)
+        expect(response.transaction).to.be.equal(null)
     })
 
     it('query the txHash that contains collect lock cells,should return hash message', async () => {

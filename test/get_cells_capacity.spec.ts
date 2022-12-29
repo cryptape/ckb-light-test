@@ -1,9 +1,7 @@
 import {
     ACCOUNT_PRIVATE, CKB_LIGHT_RPC_URL,
-    CKB_RPC_INDEX_URL,
-    CKB_RPC_URL,
     EVERY_ONE_CAN_PAY_TYPE_ID, lightClientRPC,
-    MINER_SCRIPT, rpcCLient,
+    rpcCLient,
 } from "../config/config";
 import {BI} from "@ckb-lumos/bi";
 import {AGGRON4, generateAccountFromPrivateKey, getBlockNumByTxHash, send_tx} from "../service/transfer";

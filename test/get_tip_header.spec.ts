@@ -1,6 +1,5 @@
-import {CKB_LIGHT_RPC_URL, CKB_RPC_URL, lightClientRPC, rpcCLient} from "../config/config";
+import { lightClientRPC, rpcCLient} from "../config/config";
 import * as assert from "assert";
-import {getHeader} from "../service/txService";
 
 
 describe('get_tip_header', function () {

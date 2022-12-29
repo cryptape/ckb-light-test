@@ -1,18 +1,15 @@
 import {BI} from "@ckb-lumos/bi";
-import {CKB_LIGHT_RPC_URL, CKB_RPC_URL, lightClientRPC} from "../config/config";
+import {CKB_LIGHT_RPC_URL, lightClientRPC} from "../config/config";
 import {LightClientRPC} from "@ckb-lumos/light-client";
 import {Sleep} from "./util";
 import {request} from "./index";
-import {SearchKey} from "_@ckb-lumos_ckb-indexer@0.20.0-alpha.0@@ckb-lumos/ckb-indexer/src/type";
-import {blockchain, HexString, Script} from "@ckb-lumos/base";
+import { HexString, Script} from "@ckb-lumos/base";
 import {Cell} from "@ckb-lumos/base/lib/api";
-import {GetCellsSearchKey} from "_@ckb-lumos_ckb-indexer@0.20.0-alpha.0@@ckb-lumos/ckb-indexer/lib/type";
 import {
     toGetCellsSearchKey,
 } from "@ckb-lumos/ckb-indexer/lib/paramsFormatter";
-import {utils} from "_@ckb-lumos_base@0.20.0-alpha.0@@ckb-lumos/base";
-import {deepCamelizeTransaction} from "_@ckb-lumos_base@0.20.0-alpha.0@@ckb-lumos/base/lib/utils";
-import {RPC} from "_@ckb-lumos_lumos@0.19.0@@ckb-lumos/lumos";
+import {GetCellsSearchKey, SearchKey} from "@ckb-lumos/ckb-indexer/lib/type";
+import {RPC} from "@ckb-lumos/lumos";
 
 const ckbLightClientRPC = CKB_LIGHT_RPC_URL;
 
@@ -41,8 +38,8 @@ export async function getCellsCapacityRequest(getCellsReq: SearchKey, ckbLightCl
     let request1 = [toGetCellsSearchKey(getCellsReq)];
     const res = await request(2, ckbLightClient, "get_cells_capacity", request1);
     return {
-        blockHash: res.blockHash,
-        blockNumber: res.blockNumber,
+        blockHash: res.block_hash,
+        blockNumber: res.block_number,
         capacity: res.capacity
     }
 }

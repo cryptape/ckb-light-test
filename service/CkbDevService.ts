@@ -2,7 +2,7 @@ import {
     ACCOUNT_PRIVATE, CKB_DEV_INDEX_PATH, CKB_DEV_LIGHT_CLIENT_PATH, CKB_DEV_PATH,
     CKB_DEV_RPC_INDEX_URL,
     CKB_DEV_RPC_URL,
-    CKB_LIGHT_RPC_URL, DEV_PATH, lightClientRPC,
+    CKB_LIGHT_RPC_URL, DEV_PATH,
     rpcDevCLient
 } from "../config/config";
 import {BI} from "@ckb-lumos/bi";
@@ -168,8 +168,8 @@ export async function checkCKbIndexSync() {
              {
                 script: acc1.lockScript,
                 scriptType: "lock"
-
         },CKB_DEV_RPC_INDEX_URL)
+        console.log(cap)
         if (BI.from(tip_num).lte(BI.from(cap.blockNumber))) {
             return
         }

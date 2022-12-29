@@ -48,11 +48,15 @@ describe('rollback', function () {
         await miner_block_until_number(1050)
         await initLightClient()
         // for (let i = 0; i < 100; i++) {
-        const result = await compare_cells_result(miner.lockScript)
-        await cut_miner_and_wait_lightClient_sync(13, 14)
-        const result2 = await compare_cells_result(miner.lockScript)
-        expect(result).to.be.equal(true)
-        expect(result2).to.be.equal(true)
+        //     console.log("current idx:", i)
+            const result = await compare_cells_result(miner.lockScript)
+            await cut_miner_and_wait_lightClient_sync(3, 5)
+            const result2 = await compare_cells_result(miner.lockScript)
+            expect(result).to.be.equal(true)
+            expect(result2).to.be.equal(true)
+            await miner_block()
+            let tip_num = await rpcDevCLient.getTipBlockNumber()
+            await waitScriptsUpdate(BI.from(tip_num))
         // }
     })
 
@@ -71,12 +75,18 @@ describe('rollback', function () {
         // }
     })
 
+    it("dddd", async () => {
+        await miner_block()
+    })
+
     it("transfer roll back ", async () => {
-        await miner_block_until_number(1500)
+        // await miner_block_until_number(1100)
         await cleanAndRestartCkbLightClientEnv()
-        await initLightClient()
+        await restartAndSyncCkbIndex()
+        // await initLightClient()
+        await miner_block()
         for (let i = 0; i < 2; i++) {
-            await transfer_cut_and_wait_light_sync(900)
+            await transfer_cut_and_wait_light_sync(80)
             await restartAndSyncCkbIndex()
             let compareMiner = await compare_cells_result(miner.lockScript)
             let compareTo = await compare_cells_result(acc2.lockScript)
@@ -102,13 +112,13 @@ describe('rollback', function () {
             }, CKB_LIGHT_RPC_URL)
 
         const acc2Index = await getCellsCapacityRequest({
-                script: acc2.lockScript,
-                scriptType: "lock",
+            script: acc2.lockScript,
+            scriptType: "lock",
 
         }, CKB_DEV_RPC_INDEX_URL)
         const acc2Light = await getCellsCapacityRequest({
-                script: acc2.lockScript,
-                scriptType: "lock",
+            script: acc2.lockScript,
+            scriptType: "lock",
         }, CKB_LIGHT_RPC_URL)
         return {
             miner_Index: BI.from(acc1Index.capacity).toNumber(),
@@ -136,8 +146,8 @@ describe('rollback', function () {
         let tip = await rpcDevCLient.getTipBlockNumber()
         await waitScriptsUpdate(BI.from(tip))
         const cap1 = await getCellsCapacityRequest({
-                script: acc2.lockScript,
-                scriptType: "lock",
+            script: acc2.lockScript,
+            scriptType: "lock",
         })
         console.log("account 2 cap:", BI.from(cap1.capacity).toNumber())
         const end_tip_num = await rpcDevCLient.getTipBlockNumber()

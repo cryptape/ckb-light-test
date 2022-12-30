@@ -10,7 +10,10 @@
     "node": ">=10"
   },
   "dependencies": {
-    "@ckb-lumos/lumos": "0.18.0-rc7",
+    "@ckb-lumos/codec": "v0.20.0-alpha.1",
+    "@ckb-lumos/light-client": "v0.20.0-alpha.1",
+    "@ckb-lumos/lumos": "v0.20.0-alpha.1",
+    "@ckb-lumos/rpc": "v0.20.0-alpha.1",
     "dotenv": "^16.0.1",
     "mochawesome-merge": "^4.2.1",
     "npm-run-all": "^4.1.5"
@@ -18,7 +21,9 @@
   "devDependencies": {
     "@types/chai": "^4.2.6",
     "@types/mocha": "^5.2.7",
+    "babel-cli": "^6.26.0",
     "chai": "^4.2.0",
+    "ckb-js-toolkit": "^0.10.2",
     "decimal.js": "^10.2.1",
     "mocha": "^9.2.2",
     "mocha-chai-jest-snapshot": "^1.1.0",
@@ -31,15 +36,18 @@
     "ts-generator": "^0.1.1",
     "ts-node": "^8.5.4",
     "typechain": "^4.0.0",
-    "typescript": "^3.7.3",
-    "ckb-js-toolkit": "^0.10.2"
-
+    "typescript": "^3.7.3"
   },
   "scripts": {
     "test": "mocha --config test/runners/mocha/.mocharc.jsonc --reporter mochawesome",
     "test-load": "mocha --config  test/runners/mocha/.mocharc.load.jsonc --reporter mochawesome",
     "test-data": "mocha --config  test/runners/mocha/.mocharc.data.jsonc --reporter mochawesome",
     "test-cli": "mocha --config  test/runners/mocha/.mocharc.cli.jsonc --reporter mochawesome",
-    "test-transfer-issue": "mocha --config  test/runners/mocha/.mocharc.issue.jsonc --reporter mochawesome"
+    "test-transfer-issue": "mocha --config  test/runners/mocha/.mocharc.issue.jsonc --reporter mochawesome",
+    "test-index-panic": "mocha --config test/runners/mocha/.mocharc.index-panic.jsonc --reporter mochawesome",
+    "test-roll-back": "mocha --config test/runners/mocha/.mocharc.light.rollback.jsonc --reporter mochawesome",
+    "test-roll-back:transfer": "mocha --config test/runners/mocha/.mocharc.light.rollback.jsonc --grep \"transfer\"--reporter mochawesome",
+    "test-roll-back:cut10": "mocha --config test/runners/mocha/.mocharc.light.rollback.jsonc --grep \"cut 10\"--reporter mochawesome",
+    "test-roll-back:cut300": "mocha --config test/runners/mocha/.mocharc.light.rollback.jsonc --grep \"cut 300\"--reporter mochawesome"
   }
 }

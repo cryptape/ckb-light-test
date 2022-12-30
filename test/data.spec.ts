@@ -30,81 +30,81 @@ const EVERY_ONE_CAN_PAY = EVERY_ONE_CAN_PAY_TYPE_ID
 export const TEST_DATA = {
     PUDGE: {
         DATA_CELL: {
-            cell_output: {
+            cellOutput: {
                 capacity: BI.from(65).mul(100000000).toHexString(),
                 lock: {
-                    code_hash: EVERY_ONE_CAN_PAY_DATA.CODE_HASH,
-                    hash_type: getDataType(),
+                    codeHash: EVERY_ONE_CAN_PAY_DATA.CODE_HASH,
+                    hashType: getDataType(),
                     args: convertStringToHex("DATA_CELL"),
                 },
             },
             data: "0x",
         },
         TYPE_CELL: {
-            cell_output: {
+            cellOutput: {
                 capacity: BI.from(65).mul(100000000).toHexString(),
                 lock: {
-                    code_hash: EVERY_ONE_CAN_PAY_TYPE_ID.CODE_HASH,
-                    hash_type: getType(),
+                    codeHash: EVERY_ONE_CAN_PAY_TYPE_ID.CODE_HASH,
+                    hashType: getType(),
                     args: convertStringToHex("TYPE_CELL"),
                 },
             },
             data: "0x",
         },
         DATA1_CELL: {
-            cell_output: {
+            cellOutput: {
                 capacity: BI.from(65).mul(100000000).toHexString(),
                 lock: {
-                    code_hash: EVERY_ONE_CAN_PAY_TYPE_ID.CODE_HASH,
-                    hash_type: getData1Type(),
+                    codeHash: EVERY_ONE_CAN_PAY_TYPE_ID.CODE_HASH,
+                    hashType: getData1Type(),
                     args: convertStringToHex("DATA1_CELL"),
                 },
             },
             data: "0x",
         },
         DATA_CELL_WITH_TYPE_NOT_EMPTY:{
-            cell_output:{
+            cellOutput:{
                 capacity: BI.from(150).mul(100000000).toHexString(),
                 lock:{
-                    code_hash: EVERY_ONE_CAN_PAY_DATA.CODE_HASH,
-                    hash_type: getDataType(),
+                    codeHash: EVERY_ONE_CAN_PAY_DATA.CODE_HASH,
+                    hashType: getDataType(),
                     args: convertStringToHex("DATA_CELL_WITH_TYPE_NOT_EMPTY-lock"),
                 },
                 type:{
-                    code_hash:EVERY_ONE_CAN_PAY_DATA.CODE_HASH,
-                    hash_type: getDataType(),
+                    codeHash:EVERY_ONE_CAN_PAY_DATA.CODE_HASH,
+                    hashType: getDataType(),
                     args: convertStringToHex("DATA_CELL_WITH_TYPE_NOT_EMPTY-type"),
                 }
             },
             data:"0x1234"
         },
         DATA1_CELL_WITH_TYPE_NOT_EMPTY_1:{
-            cell_output:{
+            cellOutput:{
                 capacity: BI.from(150).mul(100000000).toHexString(),
                 lock:{
-                    code_hash: EVERY_ONE_CAN_PAY_DATA.CODE_HASH,
-                    hash_type: getData1Type(),
+                    codeHash: EVERY_ONE_CAN_PAY_DATA.CODE_HASH,
+                    hashType: getData1Type(),
                     args: convertStringToHex("DATA1_CELL_WITH_TYPE_NOT_EMPTY_1-lock"),
                 },
                 type:{
-                    code_hash:EVERY_ONE_CAN_PAY_DATA.CODE_HASH,
-                    hash_type: getData1Type(),
+                    codeHash:EVERY_ONE_CAN_PAY_DATA.CODE_HASH,
+                    hashType: getData1Type(),
                     args: convertStringToHex("DATA1_CELL_WITH_TYPE_NOT_EMPTY_1-type"),
                 }
             },
             data:"0x1234"
         },
         DATA1_CELL_WITH_TYPE_NOT_EMPTY_2:{
-            cell_output:{
+            cellOutput:{
                 capacity: BI.from(150).mul(100000000).toHexString(),
                 lock:{
-                    code_hash: EVERY_ONE_CAN_PAY_DATA.CODE_HASH,
-                    hash_type: getData1Type(),
+                    codeHash: EVERY_ONE_CAN_PAY_DATA.CODE_HASH,
+                    hashType: getData1Type(),
                     args: convertStringToHex("DATA1_CELL_WITH_TYPE_NOT_EMPTY_2-lock"),
                 },
                 type:{
-                    code_hash: EVERY_ONE_CAN_PAY_DATA.CODE_HASH,
-                    hash_type: getData1Type(),
+                    codeHash: EVERY_ONE_CAN_PAY_DATA.CODE_HASH,
+                    hashType: getData1Type(),
                     args: convertStringToHex("DATA1_CELL_WITH_TYPE_NOT_EMPTY_2-type"),
                 }
             },

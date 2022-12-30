@@ -1,13 +1,12 @@
-import {BIish} from "@ckb-lumos/bi";
 import {AGGRON4, generateAccountFromPrivateKey} from "./transfer";
 import {BI, commons, hd, helpers, Indexer, RPC} from "@ckb-lumos/lumos";
 import {deploy} from "@ckb-lumos/common-scripts";
-import {Script, utils} from "@ckb-lumos/base";
+import {Script} from "@ckb-lumos/base";
 import {ACCOUNT_PRIVATE, CKB_RPC_INDEX_URL, CKB_RPC_URL, FEE, rpcCLient} from "../config/config";
 import {TransactionSkeletonType} from "@ckb-lumos/helpers";
-import { readFileSync } from 'fs';
+import {readFileSync} from 'fs';
 
-import { Reader } from "ckb-js-toolkit";
+import {estimate_cycles} from "./ckbService";
 
 
 const ckbRpcUrl = CKB_RPC_URL;
@@ -15,18 +14,18 @@ const ckbRpcIndexUrl = CKB_RPC_INDEX_URL;
 const rpc = new RPC(ckbRpcUrl);
 const indexer = new Indexer(ckbRpcIndexUrl, ckbRpcUrl);
 
-enum DeployType {
+export enum DeployType {
     data,
     typeId,
 }
 
 
-interface ScriptConfig {
+export interface ScriptConfig {
     // if hash_type is type, code_hash is ckbHash(type_script)
     // if hash_type is data, code_hash is ckbHash(data)
     CODE_HASH: string;
 
-    HASH_TYPE: "type" | "data";
+    HASH_TYPE: "type" | "data"|"data1";
 
     TX_HASH: string;
     // the deploy cell can be found at index of tx's outputs
@@ -39,7 +38,7 @@ interface ScriptConfig {
     SHORT_ID?: number;
 }
 
-export async function upgradeContract(privateKey:string, SCRIPTBINARY: Uint8Array,_typeId: Script):Promise<any>{
+export async function upgradeContract(privateKey: string, SCRIPTBINARY: Uint8Array, _typeId: Script): Promise<any> {
     let acc = generateAccountFromPrivateKey(privateKey)
 
     let deployResult = await deploy.generateUpgradeTypeIdDataTx(
@@ -48,7 +47,7 @@ export async function upgradeContract(privateKey:string, SCRIPTBINARY: Uint8Arra
             scriptBinary: SCRIPTBINARY,
             fromInfo: acc.address,
             config: AGGRON4,
-            typeId:_typeId,
+            typeId: _typeId,
         }
     )
     let txSkeleton = deployResult.txSkeleton
@@ -57,37 +56,35 @@ export async function upgradeContract(privateKey:string, SCRIPTBINARY: Uint8Arra
     const message = txSkeleton.get("signingEntries").get(0)?.message;
     const Sig = hd.key.signRecoverable(message!, ACCOUNT_PRIVATE);
     let tx1 = helpers.sealTransaction(txSkeleton, [Sig]);
-    let tx =  await rpc.send_transaction(tx1, "passthrough");
-    console.log('tx:',tx)
+    let tx = await rpc.sendTransaction(tx1, "passthrough");
+    console.log('tx:', tx)
     return deployResult.scriptConfig
 
 
 }
 
-export async function deployContractByPath(privateKey:string,path:string,deployType:DeployType): Promise<ScriptConfig>{
+export async function deployContractByPath(privateKey: string, path: string, deployType: DeployType): Promise<ScriptConfig> {
     const contractBin = readFileSync(path);
-    return deployContractByArray(privateKey,contractBin,deployType)
+    return await deployContractByArray(privateKey, contractBin, deployType)
 }
 
 //todo change SCRIPT BINARY => file path
-export async function deployContractByArray(privateKey: string, SCRIPTBINARY: Uint8Array,deployType:DeployType ): Promise<ScriptConfig> {
-
-
+export async function deployContractByArray(privateKey: string, SCRIPTBINARY: Uint8Array, deployType: DeployType): Promise<ScriptConfig> {
     let acc = generateAccountFromPrivateKey(privateKey)
 
     // let txSkeleton = helpers.TransactionSkeleton({cellProvider: indexer})
     let deployResult;
-
     switch (deployType) {
         case DeployType.data:
             deployResult = await deploy.generateDeployWithDataTx(
-            {
-                cellProvider: indexer,
-                scriptBinary: SCRIPTBINARY,
-                fromInfo: acc.address,
-                config: AGGRON4,
-            }
-        );break
+                {
+                    cellProvider: indexer,
+                    scriptBinary: SCRIPTBINARY,
+                    fromInfo: acc.address,
+                    config: AGGRON4,
+                }
+            );
+            break
         case DeployType.typeId:
             deployResult = await deploy.generateDeployWithTypeIdTx(
                 {
@@ -96,18 +93,38 @@ export async function deployContractByArray(privateKey: string, SCRIPTBINARY: Ui
                     fromInfo: acc.address,
                     config: AGGRON4,
                 }
-            );break
-        default:throw new Error("not support")
+            );
+            break
+        default:
+            throw new Error("not support")
     }
-
     let txSkeleton = deployResult.txSkeleton
     // txSkeleton = subFee(txSkeleton)
     txSkeleton = commons.common.prepareSigningEntries(txSkeleton);
+    let SECP256K1_BLAKE160_HASH = (await rpc.getBlockByNumber("0x0")).transactions[1].hash
+    // txSkeleton = txSkeleton.update("")
+    txSkeleton = txSkeleton.update("cellDeps", (cellDeps) => cellDeps.remove(0))
+    txSkeleton = txSkeleton.update("cellDeps", (cellDeps) => cellDeps.remove(0))
+    txSkeleton = txSkeleton.update("cellDeps", (cellDeps) =>
+        cellDeps.push(...[
+            {
+                outPoint: {
+                    txHash: SECP256K1_BLAKE160_HASH,
+                    index: AGGRON4.SCRIPTS.SECP256K1_BLAKE160.INDEX,
+                },
+                depType: AGGRON4.SCRIPTS.SECP256K1_BLAKE160.DEP_TYPE,
+            }])
+    );
+    console.log(deployResult.scriptConfig)
+
     const message = txSkeleton.get("signingEntries").get(0)?.message;
     const Sig = hd.key.signRecoverable(message!, ACCOUNT_PRIVATE);
     let tx1 = helpers.sealTransaction(txSkeleton, [Sig]);
-    let tx =  await rpc.send_transaction(tx1, "passthrough");
-    console.log('tx:',tx)
+    console.log("tx1:", JSON.stringify(tx1))
+    let res = await estimate_cycles(tx1)
+    console.log("res:", res)
+    let tx = await rpc.sendTransaction(tx1, "passthrough");
+    console.log('tx:', tx)
     return deployResult.scriptConfig
 }
 
@@ -151,12 +168,10 @@ export async function deployContractByArray(privateKey: string, SCRIPTBINARY: Ui
 // }
 
 
-
-
 function subFee(txSkeleton: TransactionSkeletonType): TransactionSkeletonType {
     txSkeleton.get("outputs").map(function (outPut, idx) {
-        if (outPut.cell_output.type == null) {
-            outPut.cell_output.capacity = BI.from(outPut.cell_output.capacity).sub(BI.from(FEE)).toHexString()
+        if (outPut.cellOutput.type == null) {
+            outPut.cellOutput.capacity = BI.from(outPut.cellOutput.capacity).sub(BI.from(FEE)).toHexString()
             txSkeleton.get("outputs").set(idx, outPut)
             return txSkeleton
         }

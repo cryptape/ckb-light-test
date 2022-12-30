@@ -1,30 +1,25 @@
 {
-  "script": {
-    "code_hash": "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8",
-    "hash_type": "type",
-    "args": "0x00010203"
-  },
-  "script_type": "lock",
   "filter": {
-    "script": {
-      "code_hash": "0x82d76d1b75fe2fd9a27dfbaa65a039221a380d76c926f378d3f81cf3e7e13f2e",
-      "hash_type": "type",
-      "args": "0x00010203"
-    },
-    "script_len_range": null,
-    "output_data_len_range": [
-      "0x16",
-      "0x378"
-    ],
-    "output_capacity_range": [
-      "0xf4240",
-      "0x5f5e100"
-    ],
     "block_range": [
       "0x21",
       "0x3e7"
+    ],
+    "script": {
+      "args": "0x00010203",
+      "code_hash": "0x82d76d1b75fe2fd9a27dfbaa65a039221a380d76c926f378d3f81cf3e7e13f2e",
+      "hash_type": "type"
+    },
+    "script_len_range": [
+      "0x0",
+      "0x6f"
     ]
   },
-  "with_data": false,
-  "group_by_transaction": null
+  "group_by_transaction": false,
+  "script": {
+    "args": "0x00010203",
+    "code_hash": "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8",
+    "hash_type": "type"
+  },
+  "script_type": "lock",
+  "with_data": false
 }

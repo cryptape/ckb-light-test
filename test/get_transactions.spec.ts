@@ -1,18 +1,19 @@
-import {getTransactions} from "../rpc";
+import {lightClientRPC} from "../config/config";
 
 describe('get_transactions', function () {
 
     it("demo",async ()=>{
 
-        let response = await getTransactions({
+        let response = await lightClientRPC.getTransactions(
+            {
                 "script": {
-                    "code_hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-                    "hash_type": "data",
+                    "codeHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+                    "hashType": "data",
                     "args": "0x"
                 },
-                "script_type": "lock",
-                "group_by_transaction": true
-            }
+                "scriptType": "lock",
+                "groupByTransaction": true
+            },"asc","0xfff"
         )
         console.log("response:",response)
     })

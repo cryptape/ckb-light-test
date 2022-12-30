@@ -1,17 +1,24 @@
-import {fetch_header, getTipHeader, waitScriptsUpdate} from "../rpc";
-import {CkbClientNode, rpcCLient} from "../config/config";
+import {lightClientRPC, MINER_SCRIPT, rpcCLient} from "../config/config";
 import {expect} from "chai";
 import {Sleep} from "../service/util";
 import {BI} from "@ckb-lumos/bi";
+import {FetchFlag} from "@ckb-lumos/light-client/lib/type";
+import {waitScriptsUpdate} from "../service/lightService";
+import {generateAccountFromPrivateKey} from "../service/transfer";
 
 describe('fetch_header', function () {
 
-    this.timeout(1000_10000)
+    this.timeout(600_000)
 
     it("genesis hash,should return fetched", async () => {
         // https://pudge.explorer.nervos.org/block/0x10639e0895502b5688a6be8cf69460d76541bfa4821629d86d62ba0aae3f9606
-        const res = await fetch_header("0x10639e0895502b5688a6be8cf69460d76541bfa4821629d86d62ba0aae3f9606")
-        expect(res.status).to.be.equal("fetched")
+        const lightRes = await lightClientRPC.fetchHeader("0x10639e0895502b5688a6be8cf69460d76541bfa4821629d86d62ba0aae3f9606")
+        const ckbRes = await rpcCLient.getHeader("0x10639e0895502b5688a6be8cf69460d76541bfa4821629d86d62ba0aae3f9606")
+        expect(lightRes.status).to.be.equal("fetched")
+
+        if(lightRes.status == FetchFlag.Fetched){
+            expect(JSON.stringify(lightRes.data).toString().length).to.be.equal(JSON.stringify(ckbRes).toString().replace("\\","").length)
+        }
     })
 
 
@@ -23,13 +30,15 @@ describe('fetch_header', function () {
     })
 
     it("fetch height > tip_header",async ()=>{
-        let tip_header = await rpcCLient.get_tip_header()
-        await fetch_header(tip_header.hash)
+
+        let tip_header = await rpcCLient.getTipHeader()
+        await lightClientRPC.setScripts([
+            {script:MINER_SCRIPT,
+            scriptType:"lock",blockNumber:BI.from(tip_header.number).sub(1).toHexString()}
+        ])
+        await lightClientRPC.fetchHeader(tip_header.hash)
         await waitScriptsUpdate(BI.from(tip_header.number))
         await waitFetchedHeaderStatusChange(tip_header.hash,"fetched",1000)
-    })
-
-    it("get script ",async ()=>{
     })
 
 
@@ -50,14 +59,15 @@ describe('fetch_header', function () {
 });
 
 async function getHeaderHashByBlockNumber(blockNum: string) {
-    let blockMsg = await rpcCLient.get_block_by_number(blockNum)
+    let blockMsg = await rpcCLient.getBlockByNumber(blockNum)
     return blockMsg.header.hash
 }
 
 
-async function waitFetchedHeaderStatusChange(hash: string, status: "added" | "fetching" | "fetched" | "not_found", tryCount: number) {
+export async function waitFetchedHeaderStatusChange(hash: string, status: "added" | "fetching" | "fetched" | "not_found", tryCount: number) {
     for (let i = 0; i < tryCount; i++) {
-        let response = await fetch_header(hash)
+        let response = await lightClientRPC.fetchHeader(hash)
+        console.log("response:",response.status)
         if (response.status == status) {
             return response
         }

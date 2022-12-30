@@ -12,13 +12,19 @@ class LightClient {
     }
 
     async start(): Promise<boolean> {
+        try{
+            await sh("rm "+this.dirPath + "/target/release/data/store/LOCK")
+        }catch(e){
+            console.log(e)
+        }
         await sh("cd " + this.dirPath + "/target/release && RUST_LOG=info,ckb_light_client=trace ./ckb-light-client run --config-file ./config.toml > node.log 2>&1 &")
+        await sleep(5*1000)
         return true
     }
 
     async stop(): Promise<boolean> {
 
-        await sh("pkill ckb-light-client")
+        await sh("pkill ckb-light")
         return true
     }
 
@@ -51,11 +57,33 @@ export {
 }
 
 
-async function sh(cmd: string) {
+export async function shWithTimeOutNotErr(cmd:string,timeout:number){
     console.log('sh:', cmd)
     return new Promise(function (resolve, reject) {
-        exec(cmd, { timeout: 10000},(err, stdout, stderr) => {
+        let c = exec(cmd, { timeout: timeout},(err, stdout, stderr) => {
             if (err) {
+                // console.log(err)
+                if(!c.killed){
+                    c.kill()
+                }
+                resolve(err);
+            } else {
+                console.log('response:', stdout)
+                resolve({stdout, stderr});
+            }
+        });
+    });
+}
+export async function shWithTimeout(cmd:string,timeout:number){
+    console.log('sh:', cmd)
+    return new Promise(function (resolve, reject) {
+        let c = exec(cmd, { timeout: timeout},(err, stdout, stderr) => {
+            if (err) {
+                console.log(err)
+                console.log(c.pid)
+                console.log("killed:",c.killed)
+                // c.kill()
+                console.log("killed:",c.killed)
                 reject(err);
             } else {
                 console.log('response:', stdout)
@@ -63,6 +91,9 @@ async function sh(cmd: string) {
             }
         });
     });
+}
+export async function sh(cmd: string) {
+   return await shWithTimeout(cmd,10000)
 
 }
 

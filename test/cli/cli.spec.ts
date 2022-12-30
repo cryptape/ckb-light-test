@@ -1,10 +1,17 @@
-import {ACCOUNT_PRIVATE, CKB_RPC_INDEX_URL, CkbClientNode, LightCli, MINER_SCRIPT} from "../../config/config";
+import {
+    ACCOUNT_PRIVATE,
+    CKB_RPC_INDEX_URL,
+    indexer,
+    LightCli,
+    lightClientRPC,
+    MINER_SCRIPT
+} from "../../config/config";
 import {expect} from "chai";
-import {getCells, getCellsCapacity, getScripts, setScripts} from "../../rpc";
 import {Sleep} from "../../service/util";
 import {helpers} from "@ckb-lumos/lumos";
 import {generateAccountFromPrivateKey} from "../../service/transfer";
 import {BI} from "@ckb-lumos/bi";
+import {getCellsCapacityRequest} from "../../service/lightService";
 
 describe('cli', function () {
     this.timeout(1000_00000)
@@ -14,82 +21,52 @@ describe('cli', function () {
     })
     describe('get-capacity', function () {
 
-        it("--help",async ()=>{
+        it("--help", async () => {
             await LightCli.cli(" get-capacity --help")
         })
-        it("--address, no register,should return failed ",async ()=>{
+        it("--address, no register,should return failed ", async () => {
             try {
                 await LightCli.cli(" get-capacity --address ckt1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqgaqan1")
-            }catch (e){
-                console.log("e:",e)
+            } catch (e) {
+                console.log("e:", e)
                 return
             }
             expect("").to.be.equal("failed")
         })
 
-        it("--address ,register address ,should return ckb balance",async ()=>{
+        it("--address ,register address ,should return ckb balance", async () => {
             // register
-            await setScripts([
-                {script:MINER_SCRIPT,script_type:"lock",block_number:"0x0"}
+            await lightClientRPC.setScripts([
+                {script: MINER_SCRIPT, scriptType: "lock", blockNumber: "0x0"}
             ])
             let address = helpers.encodeToAddress(MINER_SCRIPT)
             // get cap
-            let response = await LightCli.cli(" get-capacity --address "+address)
+            let response = await LightCli.cli(" get-capacity --address " + address)
             expect(response.stdout).to.be.include("CKB")
             expect(response.stdout).to.be.include("synchronized")
         })
     });
 
     describe('transfer', function () {
-        it(" --help",async ()=>{
+        it(" --help", async () => {
             await LightCli.cli(" transfer --help")
         })
 
-        it("demo",async ()=>{
+        it("demo", async () => {
             let account = generateAccountFromPrivateKey(ACCOUNT_PRIVATE)
-
-            async function syncAccountBalanceByCells(address: string, minBalance: BI) {
-                //get set script msg
-
-                let setScriptTem = helpers.parseAddress(address)
-
-                // check account balance > bi
-                let cap = await getCellsCapacity(setScriptTem,CKB_RPC_INDEX_URL)
-                if (BI.from(cap.capacity).lt(minBalance)){
-                    throw Error("balance not enough")
-                }
-
-                // set script
-                let cells = await getCells(setScriptTem,"lock",CKB_RPC_INDEX_URL)
-                let minCellNumHex = cells.objects[0].block_number
-                await setScripts([
-                    {script:setScriptTem,script_type:"lock",block_number:minCellNumHex}
-                ])
-                //wait account update
-                while (true){
-                    let cap = await getCellsCapacity(setScriptTem)
-                    if(BI.from(cap.capacity).gt(minBalance)){
-                        return
-                    }
-                    await Sleep(1_1000)
-                    console.log("light sync  balance:",BI.from(cap.capacity).toNumber())
-                }
-
-            }
-
-            await syncAccountBalanceByCells(account.address,BI.from(1001).mul(10000000))
+            await syncAccountBalanceByCells(account.address, BI.from(1001).mul(10000000))
             let to = account.address
             let cap = "100.1"
-            let response = await LightCli.cli(" transfer "+
-                " --from-key "+ ACCOUNT_PRIVATE+
-                " --to-address "+ to+
-                " --capacity "+ cap)
+            let response = await LightCli.cli(" transfer " +
+                " --from-key " + ACCOUNT_PRIVATE +
+                " --to-address " + to +
+                " --capacity " + cap)
             expect(response.stdout).to.be.include("tx sent")
             console.log("")
 
         })
 
-        it("use type script InvalidCodeHash",async ()=>{
+        it("use type script InvalidCodeHash", async () => {
             let account = generateAccountFromPrivateKey(ACCOUNT_PRIVATE)
 
             async function syncAccountBalanceByCells(address: string, minBalance: BI) {
@@ -98,36 +75,45 @@ describe('cli', function () {
                 let setScriptTem = helpers.parseAddress(address)
 
                 // check account balance > bi
-                let cap = await getCellsCapacity(setScriptTem,CKB_RPC_INDEX_URL)
-                if (BI.from(cap.capacity).lt(minBalance)){
+                let cap = await getCellsCapacityRequest({
+                    script: setScriptTem,
+                    scriptType: "lock"
+                }, CKB_RPC_INDEX_URL)
+                if (BI.from(cap.capacity).lt(minBalance)) {
                     throw Error("balance not enough")
                 }
 
                 // set script
-                let cells = await getCells(setScriptTem,"lock",CKB_RPC_INDEX_URL)
-                let minCellNumHex = cells.objects[0].block_number
-                await setScripts([
-                    {script:setScriptTem,script_type:"lock",block_number:minCellNumHex}
+                let cells = await indexer.getCells({
+                    script: setScriptTem,
+                    scriptType: "lock"
+                })
+                let minCellNumHex = cells.objects[0].blockNumber
+                await lightClientRPC.setScripts([
+                    {script: setScriptTem, scriptType: "lock", blockNumber: minCellNumHex}
                 ])
                 //wait account update
-                while (true){
-                    let cap = await getCellsCapacity(setScriptTem)
-                    if(BI.from(cap.capacity).gt(minBalance)){
+                while (true) {
+                    let cap = await getCellsCapacityRequest({
+                        script: setScriptTem,
+                        scriptType: "lock"
+                    })
+                    if (BI.from(cap.capacity).gt(minBalance)) {
                         return
                     }
                     await Sleep(1_1000)
-                    console.log("light sync  balance:",BI.from(cap.capacity).toNumber())
+                    console.log("light sync  balance:", BI.from(cap.capacity).toNumber())
                 }
 
             }
 
-            await syncAccountBalanceByCells(account.address,BI.from(1001).mul(10000000))
+            await syncAccountBalanceByCells(account.address, BI.from(1001).mul(10000000))
             let to = account.address
             let cap = "100.1"
-            let response = await LightCli.cli(" transfer "+
-                " --from-key "+ ACCOUNT_PRIVATE+
-                " --to-address "+ to+
-                " --capacity "+ cap)
+            let response = await LightCli.cli(" transfer " +
+                " --from-key " + ACCOUNT_PRIVATE +
+                " --to-address " + to +
+                " --capacity " + cap)
             expect(response.stdout).to.be.include("tx sent")
             console.log("")
 
@@ -136,37 +122,44 @@ describe('cli', function () {
 
     });
     describe('dao', function () {
-        it("--help",async ()=>{
+        it("--help", async () => {
             await LightCli.cli("dao --help")
         })
-        it("deposit --help",async ()=>{
+        it("deposit --help", async () => {
 
             await LightCli.cli("dao deposit --help")
         })
+        it("deposit", async () => {
+            const account = generateAccountFromPrivateKey(ACCOUNT_PRIVATE)
+            await syncAccountBalanceByCells(account.address, BI.from(1001).mul(10000000))
+            await LightCli.cli(" dao deposit --from-key " + ACCOUNT_PRIVATE.substring(2, ACCOUNT_PRIVATE.length) + "  --capacity 150.43")
+        })
+        it("")
+
     });
 
     describe('example-search-key', function () {
 
-        it("--help",async ()=>{
+        it("--help", async () => {
             await LightCli.cli(" example-search-key --help")
         })
-        it("with-filter",async ()=>{
+        it("with-filter", async () => {
             await LightCli.cli(" example-search-key --with-filter")
         })
 
-        it("--get-transactions",async ()=>{
+        it("--get-transactions", async () => {
             await LightCli.cli(" example-search-key --get-transactions")
         })
 
-        it("--get-transactions",async ()=>{
+        it("--get-transactions", async () => {
             await LightCli.cli(" example-search-key --with-filter --help")
         })
 
-        it("--get-transactions --with-filter",async ()=>{
+        it("--get-transactions --with-filter", async () => {
             await LightCli.cli(" example-search-key --get-cells")
         })
 
-        it("-",async ()=>{
+        it("-", async () => {
             await LightCli.cli(" example-search-key")
         })
     });
@@ -193,7 +186,7 @@ describe('cli', function () {
                 let response = await LightCli.setScript("--scripts resource/cli/set-script.demo.json")
                 expect(response.stdout).to.be.include("success")
             })
-            it("--script address,num",async ()=>{
+            it("--script address,num", async () => {
                 let response = await LightCli.setScript("--scripts ckt1qyqvjdmh4re8t7mfjr0v0z27lwwjqu384vhs6lfftr,100")
                 expect(response.stdout).to.be.include("0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8")
             })
@@ -215,11 +208,11 @@ describe('cli', function () {
                 await LightCli.cli(" rpc get-cells --search-key resource/cli/get-cells.demo.json --limit 1")
             })
 
-            it("example-search",async ()=>{
+            it("example-search", async () => {
                 await LightCli.cli(" rpc get-cells --search-key resource/cli/example-search-key.json --limit 1")
             })
 
-            it("example-search-withFilter",async ()=>{
+            it("example-search-withFilter", async () => {
                 await LightCli.cli(" rpc get-cells --search-key resource/cli/example-search-key.withFilter.json --limit 1")
             })
 
@@ -268,7 +261,7 @@ describe('cli', function () {
 
         describe('get-transactions', function () {
 
-            it("--help",async ()=>{
+            it("--help", async () => {
                 await LightCli.cli(" rpc get-transactions --help")
             })
             // before(async ()=>{
@@ -298,7 +291,7 @@ describe('cli', function () {
 
             });
 
-            it("example-search-withFilter",async ()=>{
+            it("example-search-withFilter", async () => {
                 await LightCli.cli(" rpc get-transactions --search-key resource/cli/example-search-key.withFilter.json --limit 1")
             })
 
@@ -313,11 +306,11 @@ describe('cli', function () {
 
         describe('get-cells-capacity', function () {
 
-            it("--help",async ()=>{
+            it("--help", async () => {
                 await LightCli.cli(" rpc get-cells-capacity --help")
             })
 
-            it("example-search-key",async ()=>{
+            it("example-search-key", async () => {
                 await LightCli.cli(" rpc get-cells-capacity --search-key resource/cli/example-search-key.withFilter.json")
             })
 
@@ -424,3 +417,38 @@ describe('cli', function () {
     })
 
 });
+
+export async function syncAccountBalanceByCells(address: string, minBalance: BI) {
+    //get set script msg
+
+    let setScriptTem = helpers.parseAddress(address)
+
+    // check account balance > bi
+    let cap = await getCellsCapacityRequest({
+        script:setScriptTem,
+        scriptType:"lock",
+    }, CKB_RPC_INDEX_URL)
+    if (BI.from(cap.capacity).lt(minBalance)) {
+        throw Error("balance not enough")
+    }
+
+    // set script
+    let cells = await indexer.getCells({script:setScriptTem,scriptType:"lock"})
+    let minCellNumHex = cells.objects[0].blockNumber
+    await lightClientRPC.setScripts([
+        {script: setScriptTem, scriptType: "lock", blockNumber: minCellNumHex}
+    ])
+    //wait account update
+    while (true) {
+        let cap = await getCellsCapacityRequest({
+            script:setScriptTem,
+            scriptType:"lock"
+        })
+        if (BI.from(cap.capacity).gt(minBalance)) {
+            return
+        }
+        await Sleep(1_1000)
+        console.log("light sync  balance:", BI.from(cap.capacity).toNumber())
+    }
+
+}

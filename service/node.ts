@@ -18,6 +18,7 @@ class LightClient {
             console.log(e)
         }
         await sh("cd " + this.dirPath + "/target/release && RUST_LOG=info,ckb_light_client=trace ./ckb-light-client run --config-file ./config.toml > node.log 2>&1 &")
+        await sleep(5*1000)
         return true
     }
 

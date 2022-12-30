@@ -1,9 +1,10 @@
-import {lightClientRPC, rpcCLient} from "../config/config";
+import {lightClientRPC, MINER_SCRIPT, rpcCLient} from "../config/config";
 import {expect} from "chai";
 import {Sleep} from "../service/util";
 import {BI} from "@ckb-lumos/bi";
 import {FetchFlag} from "@ckb-lumos/light-client/lib/type";
 import {waitScriptsUpdate} from "../service/lightService";
+import {generateAccountFromPrivateKey} from "../service/transfer";
 
 describe('fetch_header', function () {
 
@@ -16,8 +17,6 @@ describe('fetch_header', function () {
         expect(lightRes.status).to.be.equal("fetched")
 
         if(lightRes.status == FetchFlag.Fetched){
-            console.log(JSON.stringify(lightRes.data))
-            console.log(JSON.stringify(JSON.stringify(ckbRes)))
             expect(JSON.stringify(lightRes.data).toString().length).to.be.equal(JSON.stringify(ckbRes).toString().replace("\\","").length)
         }
     })
@@ -31,7 +30,12 @@ describe('fetch_header', function () {
     })
 
     it("fetch height > tip_header",async ()=>{
+
         let tip_header = await rpcCLient.getTipHeader()
+        await lightClientRPC.setScripts([
+            {script:MINER_SCRIPT,
+            scriptType:"lock",blockNumber:BI.from(tip_header.number).sub(1).toHexString()}
+        ])
         await lightClientRPC.fetchHeader(tip_header.hash)
         await waitScriptsUpdate(BI.from(tip_header.number))
         await waitFetchedHeaderStatusChange(tip_header.hash,"fetched",1000)

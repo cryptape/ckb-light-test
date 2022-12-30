@@ -13,7 +13,7 @@ const CKB_DEV_LIGHT_CLIENT_PATH = "tmp/startBlockchain/ckbDevWithIndexAndeLightC
 const CKB_DEV_RPC_URL = "https://testnet.ckbapp.dev/";
 const CKB_DEV_RPC_INDEX_URL = "https://testnet.ckbapp.dev/";
 
-const RPC_DEBUG = true
+const RPC_DEBUG = false
 const CKB_RPC_URL = "https://testnet.ckbapp.dev/";
 // const CKB_RPC_URL = CKB_DEV_RPC_URL;
 const CKB_RPC_INDEX_URL = "https://testnet.ckbapp.dev/";

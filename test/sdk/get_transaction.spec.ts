@@ -9,7 +9,6 @@ describe('sdk get_transaction', function () {
         const genesisBlock = await lightClientRPC.getGenesisBlock()
         let genesisTx = await lightClientRPC.getTransaction(genesisBlock.transactions[0].hash)
         let rpcTx = await rpcCLient.getTransaction(genesisBlock.transactions[0].hash)
-        console.log("tx:",rpcTx)
         expect(genesisTx).to.be.deep.equal(rpcTx)
         // todo wait lumos upgrade , skip @ts-ignore
         // @ts-ignore

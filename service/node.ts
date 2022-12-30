@@ -12,13 +12,18 @@ class LightClient {
     }
 
     async start(): Promise<boolean> {
+        try{
+            await sh("rm "+this.dirPath + "/target/release/data/store/LOCK")
+        }catch(e){
+            console.log(e)
+        }
         await sh("cd " + this.dirPath + "/target/release && RUST_LOG=info,ckb_light_client=trace ./ckb-light-client run --config-file ./config.toml > node.log 2>&1 &")
         return true
     }
 
     async stop(): Promise<boolean> {
 
-        await sh("pkill ckb-light-client")
+        await sh("pkill ckb-light")
         return true
     }
 

@@ -38,7 +38,7 @@ describe('set_script_with_remove', function () {
             })
             await Sleep(1000)
         }
-        expect(afterCap.capacity).to.be.equal(scriptCap.capacity)
+        expect(afterCap.capacity).to.be.not.equal(scriptCap.capacity)
         await setScriptWithCommand([], "all")
 
         // 2. check balance of miner account

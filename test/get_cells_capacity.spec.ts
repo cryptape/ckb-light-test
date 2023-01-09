@@ -1,6 +1,6 @@
 import {
     ACCOUNT_PRIVATE, CKB_LIGHT_RPC_URL,
-    EVERY_ONE_CAN_PAY_TYPE_ID, lightClientRPC,
+    EVERY_ONE_CAN_PAY_TYPE_ID, lightClientRPC, MINER_SCRIPT3,
     rpcCLient,
 } from "../config/config";
 import {BI} from "@ckb-lumos/bi";
@@ -247,8 +247,6 @@ describe('get_cells_capacity', function () {
                 })
                 // console.log('cel:',cellsWithData.objects.length)
                 expect(BI.from(cap.capacity).toNumber()).to.be.equal(15000000000)
-
-
             })
 
             it("[15000000001,15000000001]", async () => {
@@ -321,6 +319,19 @@ describe('get_cells_capacity', function () {
 
         });
     });
+
+        it("query result,should result that blockNumber == tip number && blockhash == tip.hash",async ()=>{
+
+            const res = await  lightClientRPC.getCellsCapacity({
+                script:MINER_SCRIPT3,
+                scriptType:"lock"
+            })
+            const tipMsg = await lightClientRPC.getTipHeader()
+            expect(res.blockNumber).to.be.equal(tipMsg.number)
+            expect(res.blockHash).to.be.equal(tipMsg.hash)
+
+
+        })
 });
 
 })

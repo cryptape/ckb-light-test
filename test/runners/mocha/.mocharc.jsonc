@@ -16,6 +16,8 @@
         "test/set_scripts.spec.ts",
         "test/scenes.test.ts",
         "test/set_script_with_command.spec.ts",
-        "test/set_script_with_remove.spec.ts"
+        "test/set_script_with_remove.spec.ts",
+        "test/get_local_info.spec.ts",
+        "test/get_peers.spec.ts"
     ]
 }

@@ -31,6 +31,7 @@ describe('set_script_with_remove', function () {
             scriptType: "lock"
         })
         let afterCap;
+        await waitScriptsUpdate(BI.from("3000"))
         for (let i = 0; i < 5; i++) {
             afterCap = await getCellsCapacityRequest({
                 script: testScript,

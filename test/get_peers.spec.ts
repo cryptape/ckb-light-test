@@ -6,6 +6,6 @@ describe('get_peers', function () {
 
     it("demo",async ()=>{
         const res = await request(1,CKB_LIGHT_RPC_URL,"get_peers",[])
-        expect(res).to.be.equal("")
+        expect(res).to.be.not.equal("")
     })
 });

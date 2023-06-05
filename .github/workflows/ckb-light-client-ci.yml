@@ -45,7 +45,7 @@ jobs:
           npm run test
 
       - name: Publish reports
-        if: always()
+        if: failure()
         uses: actions/upload-artifact@v2
         with:
           name: jfoa-build-reports-${{ runner.os }}

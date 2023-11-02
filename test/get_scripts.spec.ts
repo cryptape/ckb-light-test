@@ -1,7 +1,8 @@
-import {CkbClientNode, lightClientRPC, MINER_SCRIPT} from "../config/config";
+import {CKB_LIGHT_RPC_URL, CkbClientNode, lightClientRPC, MINER_SCRIPT} from "../config/config";
 import {expect} from "chai";
 import {Sleep} from "../service/util";
 import {BI} from "@ckb-lumos/lumos";
+import {waitScriptsUpdate} from "../service/lightService";
 
 describe('get_scripts', function () {
 
@@ -44,8 +45,7 @@ describe('get_scripts', function () {
     it("Interval query script, the height keeps increasing",async ()=>{
         await lightClientRPC.setScripts([{script:MINER_SCRIPT,scriptType:"lock",blockNumber:"0x1"}])
         await Sleep(30000)
-        let scripts = await lightClientRPC.getScripts()
-        expect(BI.from(scripts[0].blockNumber).toNumber()).to.be.gt(1)
+        await waitScriptsUpdate(BI.from(2),CKB_LIGHT_RPC_URL)
     })
 
     it.skip('The results of the query will be out of order',async ()=>{

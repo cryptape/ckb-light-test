@@ -18,6 +18,7 @@
         "test/set_script_with_command.spec.ts",
         "test/set_script_with_remove.spec.ts",
         "test/get_local_info.spec.ts",
-        "test/get_peers.spec.ts"
+        "test/get_peers.spec.ts",
+        "test/sync_after_min_block_delete.spec.ts"
     ]
 }

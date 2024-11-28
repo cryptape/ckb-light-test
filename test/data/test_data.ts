@@ -1,10 +1,11 @@
 import {rpcCLient} from "../../config/config";
 import {BI} from "@ckb-lumos/bi";
-import {Script} from "@ckb-lumos/base/lib/api";
 import * as fs from "fs";
+import {RPC} from "@ckb-lumos/rpc/lib/types/rpc";
+import {formatter} from "@ckb-lumos/rpc/lib/paramsFormatter";
 
 export class TestScript {
-    script: Script
+    script: RPC.Script
     hash: string
     block_num: number
     script_type: "lock" | "type"
@@ -45,7 +46,7 @@ export class test_data {
     getScriptByHashType(hash_type: string): TestScript[] {
         console.log('getScriptByHashType')
         return this.script_types.filter(
-            script => script.script.hashType == hash_type
+            script => script.script.hash_type == hash_type
         )
     }
 
@@ -72,9 +73,9 @@ export class test_data {
         })
         for (let i = 0; i < test_sort_scripts.length; i++) {
             if (scripts.some(spt =>
-                spt.script.codeHash == this.script_types[i].script.codeHash &&
+                spt.script.code_hash == this.script_types[i].script.code_hash &&
                 spt.script.args == this.script_types[i].script.args &&
-                spt.script.hashType == this.script_types[i].script.hashType
+                spt.script.hash_type == this.script_types[i].script.hash_type
             )) {
                 continue
             }
@@ -109,7 +110,7 @@ export async function genTestData(begin_block_num: number, end_block_num: number
                 if (outPut.type != null) {
                     script_type_total++
                     testScripts.push({
-                        script: outPut.type,
+                        script: formatter.toScript(outPut.type),
                         hash: tx.hash,
                         block_num: i,
                         script_type: "type"
@@ -123,7 +124,7 @@ export async function genTestData(begin_block_num: number, end_block_num: number
                         script_data1_total++
                     }
                     testScripts.push({
-                        script: outPut.lock,
+                        script: formatter.toScript(outPut.lock),
                         hash: tx.hash,
                         block_num: i,
                         script_type: "lock"

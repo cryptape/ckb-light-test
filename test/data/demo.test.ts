@@ -1,21 +1,23 @@
 import {getTestDataByFile} from "./test_data";
 import {CKB_LIGHT_RPC_URL, CKB_RPC_INDEX_URL, CkbClientNode, lightClientRPC} from "../../config/config";
 import {BI} from "@ckb-lumos/bi";
-import {getTransactionList} from "../../service/txService";
+import {getCkbTransactionList, getLightTransactionList} from "../../service/txService";
 import {expect} from "chai";
 import * as fs from "fs";
 import {waitScriptsUpdate} from "../../service/lightService";
+import {toScript} from "@ckb-lumos/rpc/lib/resultFormatter";
 
 describe('demo', function () {
     this.timeout(1000000000)
     let idx = 0
     let step = 1
 
-    before(async ()=>{
+    before(async () => {
         await CkbClientNode.clean()
         await CkbClientNode.start()
         await CkbClientNode.status()
     })
+
     function SkipStep(step: number): boolean {
         idx++
         return (idx % step) == 0
@@ -32,11 +34,11 @@ describe('demo', function () {
 
     for (let i = 0; i < files.length; i++) {
         if (!SkipStep(step)) continue;
-        if(files[i].search("json") == -1) continue;
+        if (files[i].search("json") == -1) continue;
         describe(files[i], function () {
             let td;
             before(async () => {
-                console.log("file:",files[i])
+                console.log("file:", files[i])
 
                 td = getTestDataByFile(files[i])
                 let setScriptData = td.getScriptSet().map(t => {
@@ -47,9 +49,9 @@ describe('demo', function () {
                         minUpdateNum = BI.from(t.block_num).sub(BI.from(1))
                     }
                     return {
-                        script: t.script,
-                        script_type: t.script_type,
-                        block_number: minUpdateNum.toHexString()
+                        script: toScript(t.script),
+                        scriptType: t.script_type,
+                        blockNumber: minUpdateNum.toHexString()
                     }
                 })
                 await lightClientRPC.setScripts(setScriptData)
@@ -62,16 +64,17 @@ describe('demo', function () {
                 let tds = td.getScriptSet()
                 let lightTotalTxs: Set<String> = new Set()
                 for (let j = 0; j < tds.length; j++) {
+                    console.log(`current ${j}/${tds.length}`)
                     let testScpt = tds[j]
-                    let indexTxs = await getTransactionList(
-                        testScpt.script,
+                    let indexTxs = await getCkbTransactionList(
+                        toScript(testScpt.script),
                         testScpt.script_type,
                         undefined,
                         CKB_RPC_INDEX_URL,
                         [BI.from(td.begin_block_num).toHexString(),
                             BI.from(td.end_block_num).toHexString()])
-                    let lightTxs = await getTransactionList(
-                        testScpt.script,
+                    let lightTxs = await getLightTransactionList(
+                        toScript(testScpt.script),
                         testScpt.script_type,
                         undefined,
                         CKB_LIGHT_RPC_URL,
@@ -92,10 +95,10 @@ describe('demo', function () {
                 console.log('getTransactionList Length:', indexTotalTxs.size)
                 console.log('td.script_types length:', tdList.size)
                 console.log('light client length:', lightTotalTxs.size)
-
+                // response['objects'][0]['transaction']['hash']
                 let outPutNotInLightList = [];
-                tdList.forEach(tx =>{
-                    if(!lightTotalTxs.has(tx)){
+                tdList.forEach(tx => {
+                    if (!lightTotalTxs.has(tx)) {
                         outPutNotInLightList.push(tx)
                     }
                 })

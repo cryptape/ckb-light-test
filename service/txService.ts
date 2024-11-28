@@ -8,6 +8,7 @@ import {FetchFlag} from "@ckb-lumos/light-client/lib/type";
 import {Script, utils} from "@ckb-lumos/base";
 import {RPC} from "@ckb-lumos/rpc/lib/types/rpc";
 import ScriptType = RPC.ScriptType;
+import {CKBRPC} from "@ckb-lumos/rpc";
 
 
 export async function fetchTransactionUntilFetched(hash: string, ckbLightClientUrl, waitSize: number) {
@@ -106,7 +107,43 @@ export function getTransferExtraLockCell(inputCell: Cell[], script: Script, extr
 
 }
 
-export async function getTransactionList(scriptObject: Script, script_type: ScriptType, lastCursor: string, ckbLightClientUrl: string, block_range?: HexadecimalRange): Promise<string[]> {
+export async function getCkbTransactionList(scriptObject: Script, script_type: ScriptType, lastCursor: string, ckbLightClientUrl: string, block_range?: HexadecimalRange): Promise<string[]> {
+    const ckbLightClient = new CKBRPC(ckbLightClientUrl)
+
+    let txList: string[] = []
+    while (true) {
+        let result = await ckbLightClient.getTransactions({
+                script: scriptObject,
+                scriptType: script_type,
+                groupByTransaction: true,
+                filter: {
+                    blockRange: block_range
+                }
+
+            },
+            "asc",
+            BI.from(3000).toHexString(), lastCursor
+        )
+        if (result.objects.length == 0) {
+            return txList
+        }
+        for (let i = 0; i < result.objects.length; i++) {
+            let tx = result.objects[i]
+            if (tx.txHash != null) {
+                txList.push(tx.txHash)
+                continue
+            }
+            txList.push(tx.txHash)
+        }
+        lastCursor = result.lastCursor
+        if (RPC_DEBUG) {
+            console.log('current totalSize:', txList.length, 'cursor:', lastCursor)
+        }
+    }
+}
+
+
+export async function getLightTransactionList(scriptObject: Script, script_type: ScriptType, lastCursor: string, ckbLightClientUrl: string, block_range?: HexadecimalRange): Promise<string[]> {
     const ckbLightClient = new LightClientRPC(ckbLightClientUrl)
 
     let txList: string[] = []
@@ -121,7 +158,7 @@ export async function getTransactionList(scriptObject: Script, script_type: Scri
 
             },
             "asc",
-            BI.from(3000).toHexString()
+            BI.from(3000).toHexString(),lastCursor
         )
         if (result.objects.length == 0) {
             return txList
@@ -179,7 +216,7 @@ export async function getCellsByRange(scriptObject: Script, script_type: ScriptT
             filter: {
                 blockRange: block_range
             }
-        }, "asc", "0xfff",lastCursor)
+        }, "asc", "0xfff", lastCursor)
         if (result.objects.length == 0) {
             break
         }

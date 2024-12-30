@@ -1,7 +1,12 @@
-// typescript config for mocha
 {
   "compilerOptions": {
-    // mocha runs in node, which uses commonjs modules
-    "module": "CommonJs"
-  }
+    "module": "commonjs",
+    "target": "es5",
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    "lib": ["ES2015", "DOM"]
+  },
+  "exclude": [
+    "node_modules"
+  ]
 }

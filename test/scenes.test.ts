@@ -70,8 +70,8 @@ describe('scenes', function () {
                 }
             })
 
-            it('exist tx ,buy not contains cell tx ,should return null', async () => {
-                await Sleep(1000 * 5);
+            it('exist tx ,but not contains cell tx ,should return null', async () => {
+                await Sleep(1000 * 10);
                 let header = await lightClientRPC.getTipHeader()
                 let txs = await getTransactionsByBlockNum(BI.from(header.number).toNumber(), rpcCLient)
                 for (const tx of txs) {

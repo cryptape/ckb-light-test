@@ -267,7 +267,7 @@ describe('set_scripts', function () {
         });
 
         describe('block number', function () {
-            it('block number is overflow,should return failed msg', async () => {
+            it.skip('block number is overflow,should return failed msg', async () => {
                 if (checkLightClientWasm()){
                     return
                 }

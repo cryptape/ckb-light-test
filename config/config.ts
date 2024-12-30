@@ -5,20 +5,21 @@ import {LightClientRPC} from "@ckb-lumos/light-client";
 
 const CKB_CLIENT_CLI_PATH = "tmp/ckb-cli-light-client"
 const CKB_LIGHT_CLIENT_PATH = "tmp/startBlockchain/ckbLightClient/ckb-light-client"
-const DEV_PATH = "tmp/startBlockchain/ckbDevWithIndexAndeLightClient"
-const CKB_DEV_PATH = "tmp/startBlockchain/ckbDevWithIndexAndeLightClient/ckb/target/release"
-const CKB_DEV_INDEX_PATH = "tmp/startBlockchain/ckbDevWithIndexAndeLightClient/ckb-indexer/target/release"
-const CKB_DEV_LIGHT_CLIENT_PATH = "tmp/startBlockchain/ckbDevWithIndexAndeLightClient/ckb-light-client/target/release"
+const DEV_PATH = "tmp/startBlockchain/ckbDevWithIndexAndLightClient"
+const CKB_DEV_PATH = "tmp/startBlockchain/ckbDevWithIndexAndLightClient/ckb/target/release"
+const CKB_DEV_INDEX_PATH = "tmp/startBlockchain/ckbDevWithIndexAndLightClient/ckb-indexer/target/release"
+const CKB_DEV_LIGHT_CLIENT_PATH = "tmp/startBlockchain/ckbDevWithIndexAndLightClient/ckb-light-client/target/release"
 
-const CKB_DEV_RPC_URL = "https://testnet.ckbapp.dev/";
-const CKB_DEV_RPC_INDEX_URL = "https://testnet.ckbapp.dev/";
+const CKB_DEV_RPC_URL = "http://localhost:8114/";
+const CKB_DEV_RPC_INDEX_URL = "http://localhost:8116/";
 
-const RPC_DEBUG = false
+const RPC_DEBUG = true
 const CKB_RPC_URL = "https://testnet.ckbapp.dev/";
 // const CKB_RPC_URL = CKB_DEV_RPC_URL;
 const CKB_RPC_INDEX_URL = "https://testnet.ckbapp.dev/";
 // const CKB_RPC_INDEX_URL = CKB_DEV_RPC_INDEX_URL;
 const CKB_LIGHT_RPC_URL = "http://127.0.0.1:9000";
+
 export enum FeeRate {
     SLOW = 1000,
     NORMAL = 1000000,
@@ -32,13 +33,13 @@ config.initializeConfig(
     config.predefined.AGGRON4
 );
 const script = helpers.parseAddress(
-    "ckt1qyqvjdmh4re8t7mfjr0v0z27lwwjqu384vhs6lfftr"
+    "ckt1qyqvjdmh4re8t7mfjr0v0z27lwwjqu384vhs6lfftr", {config: config.predefined.AGGRON4}
 );
-const MINER_SCRIPT = helpers.parseAddress("ckt1qyqvjdmh4re8t7mfjr0v0z27lwwjqu384vhs6lfftr")
-const MINER_SCRIPT2 = helpers.parseAddress("ckt1qyq8ph2ywxpvkl5l0rcsugcnwcfswqpqngeqqmfuwq")
-const MINER_SCRIPT3 = helpers.parseAddress("ckt1qyqd5eyygtdmwdr7ge736zw6z0ju6wsw7rssu8fcve")
+const MINER_SCRIPT = helpers.parseAddress("ckt1qyqvjdmh4re8t7mfjr0v0z27lwwjqu384vhs6lfftr", {config: config.predefined.AGGRON4})
+const MINER_SCRIPT2 = helpers.parseAddress("ckt1qyq8ph2ywxpvkl5l0rcsugcnwcfswqpqngeqqmfuwq", {config: config.predefined.AGGRON4})
+const MINER_SCRIPT3 = helpers.parseAddress("ckt1qyqd5eyygtdmwdr7ge736zw6z0ju6wsw7rssu8fcve", {config: config.predefined.AGGRON4})
 const CkbClientNode = new LightClient(CKB_LIGHT_CLIENT_PATH)
-const lightClientRPC =  new LightClientRPC(CKB_LIGHT_RPC_URL)
+const lightClientRPC = new LightClientRPC(CKB_LIGHT_RPC_URL)
 
 const deprecatedAddr = helpers.generateAddress(script);
 const newFullAddr = helpers.encodeToAddress(script);
@@ -78,6 +79,10 @@ const EVERY_ONE_CAN_PAY_TYPE_ID = {
     DEP_TYPE: 'code'
 }
 const EVERY_ONE_CAN_PAY = EVERY_ONE_CAN_PAY_TYPE_ID
+
+export function checkLightClientWasm(): boolean {
+    return process.env.USE_LIGHT_CLIENT_WASM === 'true';
+}
 
 export {
     FEE,

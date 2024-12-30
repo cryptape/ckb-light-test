@@ -1,4 +1,6 @@
 import {exec} from "child_process";
+import {request} from "./index";
+import {checkLightClientWasm} from "../config/config";
 
 
 class LightClient {
@@ -12,10 +14,9 @@ class LightClient {
     }
 
     async start(): Promise<boolean> {
-        try{
-            await sh("rm "+this.dirPath + "/target/release/data/store/LOCK")
-        }catch(e){
-            console.log(e)
+        if (checkLightClientWasm()){
+            await request(1,this.url,"start",[])
+            return true
         }
         await sh("cd " + this.dirPath + "/target/release && RUST_LOG=info,ckb_light_client=trace ./ckb-light-client run --config-file ./config.toml > node.log 2>&1 &")
         await sleep(5*1000)
@@ -23,12 +24,20 @@ class LightClient {
     }
 
     async stop(): Promise<boolean> {
-
+        if (checkLightClientWasm()){
+            await request(1,this.url,"stop",[])
+            return true
+        }
         await sh("pkill ckb-light")
         return true
     }
 
     async clean(): Promise<boolean> {
+        if (checkLightClientWasm()){
+            await request(1,this.url,"new_client",[])
+            await request(1,this.url,"stop",[])
+            return true
+        }
         try {
             await this.stop()
 

@@ -93,7 +93,7 @@ describe('get_transactions', function () {
                     filter: {
                         blockRange: [BI.from(12112687).sub(1).toHexString(), BI.from(12116260).toHexString()],
                     }
-                }, "asc", BI.from(10000).toHexString(), lightAfterCursor
+                }, "asc", BI.from(5000).toHexString(), lightAfterCursor
             )
             if(lightTxs.objects.length == 0){
                 return
@@ -105,7 +105,7 @@ describe('get_transactions', function () {
                 filter: {
                     blockRange: [BI.from(12112687).sub(1).toHexString(), BI.from(12116260).toHexString()],
                 }
-            }, "asc", BI.from(lightTxs.objects.length).toHexString(), ckbAfterCursor)
+            }, "asc", BI.from(5000).toHexString(), ckbAfterCursor)
 
             console.log("lightTxs.objects.length:", lightTxs.objects.length)
             console.log("ckbTxs.objects.length:", ckbTxs.objects.length)

@@ -1,0 +1,3 @@
+[submodule "ckb-light-wasm-demo"]
+	path = ckb-light-wasm-demo
+	url = https://github.com/gpBlockchain/ckb-light-wasm-demo.git

@@ -30,7 +30,7 @@ export async function cut_miner_and_wait_lightClient_sync(cut_num: number, miner
 export async function compare_cells_result(scriptObject1: Script) {
     let compare = true;
     const indexCells = await getCellsMsg(scriptObject1, CKB_DEV_RPC_INDEX_URL)
-    console.log("lightCells:")
+
     const lightCells = await getCellsMsg(scriptObject1, CKB_LIGHT_RPC_URL)
     // get indexCells but not in light
     const indexNotInLightCells = indexCells.filter(cell => !lightCells.some(lightCell => {

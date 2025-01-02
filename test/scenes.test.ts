@@ -1,5 +1,5 @@
 import {
-    ACCOUNT_PRIVATE,
+    ACCOUNT_PRIVATE, checkLightClientWasm,
     CKB_LIGHT_RPC_URL,
     CKB_RPC_INDEX_URL,
     CKB_RPC_URL,
@@ -70,7 +70,8 @@ describe('scenes', function () {
                 }
             })
 
-            it('exist tx ,buy not contains cell tx ,should return null', async () => {
+            it('exist tx ,but not contains cell tx ,should return null', async () => {
+                await Sleep(1000 * 10);
                 let header = await lightClientRPC.getTipHeader()
                 let txs = await getTransactionsByBlockNum(BI.from(header.number).toNumber(), rpcCLient)
                 for (const tx of txs) {
@@ -167,7 +168,9 @@ describe('scenes', function () {
 
     });
     describe('set script that block begin with 0', function () {
-
+        if (checkLightClientWasm()){
+            return
+        }
         let account = generateAccountFromPrivateKey(ACCOUNT_PRIVATE)
 
         const costTx = "0x1850f997f867b6d3f1154444498a15e9fc4ce080215e34d0c41b33349bcc119a"
@@ -376,6 +379,9 @@ describe('scenes', function () {
         });
 
         describe('script sync to mid ，try again from 0', function () {
+            if (checkLightClientWasm()){
+                return
+            }
             let latestSyncBlockNum;
 
             let latestTxs;

@@ -1,7 +1,7 @@
 import {
     ACCOUNT_PRIVATE, EVERY_ONE_CAN_PAY_TYPE_ID,
     CKB_LIGHT_RPC_URL,
-    CKB_RPC_URL, MINER_SCRIPT, CKB_RPC_INDEX_URL, lightClientRPC, rpcCLient, indexerMockLightRpc
+    CKB_RPC_URL, MINER_SCRIPT, CKB_RPC_INDEX_URL, lightClientRPC, rpcCLient, indexerMockLightRpc, checkLightClientWasm
 } from "../config/config";
 import {AGGRON4, generateAccountFromPrivateKey, getBlockNumByTxHash, send_tx} from "../service/transfer";
 import {BI} from "@ckb-lumos/bi";
@@ -22,6 +22,9 @@ describe('get_cell', function () {
         describe('script', function () {
             describe('code_hash', function () {
                 it('length not eq 64 ', async () => {
+                    if (checkLightClientWasm()) {
+                        return
+                    }
                     let acc = generateAccountFromPrivateKey(ACCOUNT_PRIVATE)
                     acc.lockScript.codeHash = "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce"
                     await getCellsReturnFailed({
@@ -201,7 +204,9 @@ describe('get_cell', function () {
                     })
 
                     it(',should return failed', async () => {
-
+                        if (checkLightClientWasm()) {
+                            return
+                        }
                         try {
                             await lightClientRPC.getCells(
                                 {
@@ -626,13 +631,13 @@ describe('get_cell', function () {
         });
         describe('limit', function () {
             it('0,should return error that limit should be greater than 0', async () => {
-                 await getCellsReturnFailed({
+                await getCellsReturnFailed({
                     limit: "0x0", order: "asc",
                     searchKey: {
                         script: MINER_SCRIPT,
                         scriptType: "lock"
                     }
-                },CKB_LIGHT_RPC_URL)
+                }, CKB_LIGHT_RPC_URL)
             })
             it('1', async () => {
                 let cells = await getCellsRequest({
@@ -689,11 +694,17 @@ describe('get_cell', function () {
                     }
                 }
                 let cells = await getCellsRequest(getCellReq)
+                console.log("cells.objects.length:", cells.objects.length)
                 getCellReq.limit = "0x1"
                 let allCells = await getAllCellsRequest(getCellReq)
                 expect(cells.objects.length).to.be.equal(allCells.length)
+                console.log("---allCells---")
+                printCells(allCells)
+                console.log("---cells---")
+                printCells(cells.objects)
+
                 for (let i = 0; i < cells.objects.length; i++) {
-                    expect(cells.objects[i].blockNumber).to.be.equal(allCells[i].blockNumber)
+                    expect(JSON.stringify(cells.objects[i])).to.be.equals(JSON.stringify(allCells[i]))
                 }
             })
 

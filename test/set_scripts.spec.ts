@@ -1,5 +1,5 @@
 import {expect} from 'chai'
-import { lightClientRPC, rpcCLient} from "../config/config";
+import {checkLightClientWasm, lightClientRPC, rpcCLient} from "../config/config";
 import {AGGRON4} from "../service/transfer";
 import {Script} from "@ckb-lumos/base";
 import {BI} from "@ckb-lumos/bi";
@@ -44,6 +44,11 @@ describe('set_scripts', function () {
                 scriptType: "lock",
                 blockNumber: "0xffffffff"
             },
+            {
+                script: testScript,
+                scriptType: "lock",
+                blockNumber: "0xfff"
+            },
 
         ])
         expect(result).to.be.equal(null)
@@ -51,7 +56,7 @@ describe('set_scripts', function () {
         // get scripts
         let result1 = await lightClientRPC.getScripts()
         expect(result1.length).to.be.equal(1)
-        expect(result1[0].blockNumber).to.be.equal("0xffffffff")
+        expect(result1[0].blockNumber).to.be.equal("0xfff")
         expect(result1[0].script.args).to.be.equal(testScript.args)
         expect(result1[0].script.codeHash).to.be.equal(testScript.codeHash)
         expect(result1[0].script.hashType).to.be.equal(testScript.hashType)
@@ -59,7 +64,9 @@ describe('set_scripts', function () {
     })
 
     it('set with too many scripts,should return null', async () => {
-
+        if (checkLightClientWasm()){
+            return;
+        }
         const size = 10000;
         let scripts: LightClientScript[] = [];
 
@@ -109,13 +116,13 @@ describe('set_scripts', function () {
             scripts.forEach(value => {
                 temScriptsData.push({
                     script: value,
+                    scriptType:"lock",
                     blockNumber: "0x1"
                 })
             })
 
             if (temScriptsData.length > 0) {
-                // @ts-ignore
-                await setScripts(temScriptsData)
+                await lightClientRPC.setScripts(temScriptsData)
                 await lightClientRPC.getScripts()
             }
         }
@@ -125,6 +132,9 @@ describe('set_scripts', function () {
     describe('script', function () {
         describe('codeHash', function () {
             it("codeHash length not eq 64, return an error", async () => {
+                if (checkLightClientWasm()){
+                    return;
+                }
                 await setScriptRequestReturnFailed([{
                     script: {
                         codeHash: "0x1234111",
@@ -195,7 +205,9 @@ describe('set_scripts', function () {
             })
 
             it('hash_type type is null ', async () => {
-
+                if (checkLightClientWasm()){
+                    return
+                }
                 await setScriptRequestReturnFailed([{
                     script: {
                         codeHash: "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce2",
@@ -208,6 +220,9 @@ describe('set_scripts', function () {
         });
         describe('args', function () {
             it('arg is undefined,should return error msg', async () => {
+                if (checkLightClientWasm()){
+                    return
+                }
                 await setScriptRequestReturnFailed([{
                     script: {
                         codeHash: "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce2",
@@ -218,6 +233,9 @@ describe('set_scripts', function () {
             })
 
             it('arg  is null,should return error msg ', async () => {
+                if (checkLightClientWasm()){
+                    return
+                }
                 await setScriptRequestReturnFailed([{
                     script: {
                         codeHash: "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce2",
@@ -228,6 +246,9 @@ describe('set_scripts', function () {
             })
 
             it('arg is very large,should send success,return null', async () => {
+                if (checkLightClientWasm()){
+                    return
+                }
                 let argData = "0x";
                 for (let i = 0; i < 100000; i++) {
                     argData = argData + "ffffff"
@@ -247,6 +268,9 @@ describe('set_scripts', function () {
 
         describe('block number', function () {
             it.skip('block number is overflow,should return failed msg', async () => {
+                if (checkLightClientWasm()){
+                    return
+                }
                 await setScriptRequestReturnFailed([{
                     script: {
                         codeHash: "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8",

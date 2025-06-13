@@ -97,6 +97,9 @@ describe('DaoScriptSizeVerifier', function () {
         let depositTx = await send_transaction(tx, CKB_LIGHT_RPC_URL)
         await Sleep(1000)
         await miner_block();
+        await Sleep(1000)
+        await miner_block();
+
         let txWithStatus = await rpcDevCLient.getTransaction(depositTx)
         expect(txWithStatus.txStatus.status).to.equal("committed");
 
@@ -195,6 +198,8 @@ describe('DaoScriptSizeVerifier', function () {
         let withdrawTxHash = await send_transaction(withdrawTx, CKB_LIGHT_RPC_URL)
         await Sleep(1000)
         await miner_block()
+        await Sleep(1000)
+        await miner_block();
         let txWithStatus2 = await rpcDevCLient.getTransaction(withdrawTxHash)
         expect(txWithStatus2.txStatus.status).to.equal("committed");
         console.log("withdraw success")

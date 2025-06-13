@@ -1,0 +1,40 @@
+name: ci-dev
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+
+jobs:
+  npm-install-1:
+    strategy:
+      fail-fast: false
+      matrix:
+        net: ['testnet_v1']
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+      - name: prepare env
+        id: runtest
+        run: |
+          npm install --save-dev mocha @types/mocha chai @types/chai
+          sh prepare_dev.sh
+      - name: run test
+        id: ci-test
+        run: |
+          npm run test-dev
+
+      - name: Publish reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jfoa-build-reports-${{ runner.os }}
+          path: mochawesome-report/

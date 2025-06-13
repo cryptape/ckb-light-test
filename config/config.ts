@@ -2,6 +2,7 @@ import {config, helpers, Indexer, RPC} from "@ckb-lumos/lumos";
 import {LightClient} from "../service/node";
 import {LightClientCli} from "../service/light-cli";
 import {LightClientRPC} from "@ckb-lumos/light-client";
+import {CkbIndexer} from "@ckb-lumos/ckb-indexer/lib/indexer";
 
 const CKB_CLIENT_CLI_PATH = "tmp/ckb-cli-light-client"
 const CKB_LIGHT_CLIENT_PATH = "tmp/startBlockchain/ckbLightClient/ckb-light-client"
@@ -11,7 +12,7 @@ const CKB_DEV_INDEX_PATH = "tmp/startBlockchain/ckbDevWithIndexAndLightClient/ck
 const CKB_DEV_LIGHT_CLIENT_PATH = "tmp/startBlockchain/ckbDevWithIndexAndLightClient/ckb-light-client/target/release"
 
 const CKB_DEV_RPC_URL = "http://localhost:8114/";
-const CKB_DEV_RPC_INDEX_URL = "http://localhost:8116/";
+const CKB_DEV_RPC_INDEX_URL = "http://localhost:8114/";
 
 const RPC_DEBUG = true
 const CKB_RPC_URL = "https://testnet.ckbapp.dev/";
@@ -45,6 +46,9 @@ const deprecatedAddr = helpers.generateAddress(script);
 const newFullAddr = helpers.encodeToAddress(script);
 const rpcCLient = new RPC(CKB_RPC_URL);
 const rpcDevCLient = new RPC(CKB_DEV_RPC_URL);
+
+export const rpcDevIndexClient = new CkbIndexer(CKB_DEV_RPC_URL,CKB_DEV_RPC_URL);
+
 
 const {AGGRON4} = config.predefined;
 const RPC_NETWORK = AGGRON4;

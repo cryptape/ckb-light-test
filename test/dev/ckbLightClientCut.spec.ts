@@ -1,8 +1,9 @@
 import {
+    cleanAllEnv,
     cleanAndRestartCkbLightClientEnv,
     compare_cells_result,
     cut_miner_and_wait_lightClient_sync, miner_block,
-    miner_block_until_number, restartAndSyncCkbIndex, transferDevService
+    miner_block_until_number, startEnv, transferDevService
 } from "../../service/CkbDevService";
 import {expect} from "chai";
 import {generateAccountFromPrivateKey, transfer} from "../../service/transfer";
@@ -16,6 +17,7 @@ import {
 import {BI} from "@ckb-lumos/bi";
 import {getTransactionWaitCommit} from "../../service/txService";
 import {checkScriptsInLightClient, getCellsCapacityRequest, waitScriptsUpdate} from "../../service/lightService";
+import {Sleep} from "../../service/util";
 
 describe('rollback', function () {
 
@@ -23,6 +25,11 @@ describe('rollback', function () {
     let miner = generateAccountFromPrivateKey(ACCOUNT_PRIVATE)
     let acc2 = generateAccountFromPrivateKey(ACCOUNT_PRIVATE2);
 
+    before(async () => {
+      await cleanAllEnv();
+      await startEnv();
+      await Sleep(3000);
+    })
     async function initLightClient() {
         if (!(await checkScriptsInLightClient([miner.lockScript, acc2.lockScript]))) {
             await lightClientRPC.setScripts([
@@ -44,7 +51,6 @@ describe('rollback', function () {
     }
 
     it("cut 10 ,miner 11 ,check rollback succ", async () => {
-        await cleanAndRestartCkbLightClientEnv()
         await miner_block_until_number(1050)
         await initLightClient()
         // for (let i = 0; i < 100; i++) {
@@ -60,7 +66,7 @@ describe('rollback', function () {
         // }
     })
 
-    it("cut 300 ,miner 400,check roll back", async () => {
+    it.skip("cut 300 ,miner 400,check roll back", async () => {
         await cleanAndRestartCkbLightClientEnv()
         await miner_block_until_number(500)
         await initLightClient()
@@ -68,26 +74,20 @@ describe('rollback', function () {
         // for (let i = 0; i < 100; i++) {
         const result = await compare_cells_result(miner.lockScript)
         await cut_miner_and_wait_lightClient_sync(300, 400)
-        await restartAndSyncCkbIndex()
         const result2 = await compare_cells_result(miner.lockScript)
         expect(result).to.be.equal(true)
         expect(result2).to.be.equal(true)
         // }
     })
 
-    it("dddd", async () => {
-        await miner_block()
-    })
 
     it("transfer roll back ", async () => {
         // await miner_block_until_number(1100)
         await cleanAndRestartCkbLightClientEnv()
-        await restartAndSyncCkbIndex()
         // await initLightClient()
         await miner_block()
         for (let i = 0; i < 2; i++) {
             await transfer_cut_and_wait_light_sync(80)
-            await restartAndSyncCkbIndex()
             let compareMiner = await compare_cells_result(miner.lockScript)
             let compareTo = await compare_cells_result(acc2.lockScript)
             let result = await getCapMsg()

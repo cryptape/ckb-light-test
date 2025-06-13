@@ -3,6 +3,9 @@
         "test/runners/mocha/init.js"
     ],
     "spec": [
-        "test/dev/ckbLightClientCut.spec.ts"
+        "test/dev/ckbLightClientCut.spec.ts",
+        "test/dev/DaoScriptSizeVerifier.spec.ts",
+        "test/dev/minFeeVerifier.spec.ts"
+
     ]
 }

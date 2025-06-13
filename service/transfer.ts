@@ -67,6 +67,9 @@ export class TransferService {
             from: options.from,
             outputCells: [transferOutput],
             privKey: options.privKey,
+            fee: options.fee,
+            lightMode: options.lightMode,
+            lightNotInstallCellMode: options.lightNotInstallCellMode
         });
     }
 
@@ -91,11 +94,11 @@ export class TransferService {
         if (collectedSum < neededCapacity) {
             throw new Error("Not enough CKB");
         }
-
-        if (collectedSum.sub(neededCapacity).sub(FeeRate.NORMAL).gt(BI.from('0'))) {
+        let fee = options.fee || FeeRate.NORMAL
+        if (collectedSum.sub(neededCapacity).sub(fee).gt(BI.from('0'))) {
             const changeOutput: Cell = {
                 cellOutput: {
-                    capacity: collectedSum.sub(neededCapacity).sub(FeeRate.NORMAL).toHexString(),
+                    capacity: collectedSum.sub(neededCapacity).sub(fee).toHexString(),
                     lock: fromScript,
                 },
                 data: "0x",
@@ -193,7 +196,6 @@ export const generateAccountFromPrivateKey = (privKey: string): Account => {
         args: args,
     };
     const address = helpers.generateAddress(lockScript, {config: AGGRON4});
-    console.log("address:",address)
     return {
         lockScript,
         address,
@@ -219,6 +221,9 @@ interface transferOptions {
     to: string;
     amount: string;
     privKey: string;
+    fee?: number;
+    lightMode?: boolean;
+    lightNotInstallCellMode?: boolean;
 }
 
 interface Options {
@@ -229,6 +234,7 @@ interface Options {
     deps?: CellDep[];
     lightMode?: boolean;
     lightNotInstallCellMode?: boolean;
+    fee?: number;
 }
 
 function getOutPutCell(to: string, amount: string, data: string): Cell {
@@ -536,7 +542,6 @@ export async function send_tx_options(options: Options): Promise<string> {
     const tx = helpers.sealTransaction(txSkeleton, [Sig]);
     const hash = await defaultRpc.sendTransaction(tx, "passthrough");
     console.log("The transaction hash is", hash);
-
     return hash;
 
 }

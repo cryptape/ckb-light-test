@@ -75,6 +75,9 @@ describe('minFeeVerifier', function () {
             await Sleep(1000)
             let txMsg = await rpcDevCLient.getTransaction(tx);
             console.log(txMsg.txStatus.status)
+
+            await miner_block()
+            await Sleep(1000)
             await miner_block()
             txMsg = await rpcDevCLient.getTransaction(tx);
             console.log(txMsg.txStatus.status)
@@ -83,5 +86,5 @@ describe('minFeeVerifier', function () {
         }
         expect.fail("should throw error when fee too low")
     })
-    
+
 });

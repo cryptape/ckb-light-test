@@ -93,7 +93,8 @@ describe('DaoScriptSizeVerifier', function () {
         const message = txSkeleton.get("signingEntries").get(0)?.message;
         const Sig = key.signRecoverable(message!, ACCOUNT_PRIVATE);
         const tx = sealTransaction(txSkeleton, [Sig]);
-        console.log(JSON.stringify(tx))
+        tip_num = await rpcDevCLient.getTipBlockNumber()
+        await waitScriptsUpdate(BI.from(tip_num))
         let depositTx = await send_transaction(tx, CKB_LIGHT_RPC_URL)
         await Sleep(1000)
         await miner_block();

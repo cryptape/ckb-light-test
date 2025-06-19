@@ -41,6 +41,7 @@
   "scripts": {
     "test-wasm": "USE_LIGHT_CLIENT_WASM=true mocha --config test/runners/mocha/.mocharc.jsonc --reporter mochawesome",
     "test": "mocha --config test/runners/mocha/.mocharc.jsonc --reporter mochawesome",
+    "test-dev": "mocha --config test/runners/mocha/.mocharc.dev.jsonc --reporter mochawesome",
     "test-load": "mocha --config  test/runners/mocha/.mocharc.load.jsonc --reporter mochawesome",
     "test-data": "mocha --config  test/runners/mocha/.mocharc.data.jsonc --reporter mochawesome",
     "test-data-wasm": "USE_LIGHT_CLIENT_WASM=true mocha mocha --config  test/runners/mocha/.mocharc.data.jsonc --reporter mochawesome",

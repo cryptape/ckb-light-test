@@ -151,14 +151,9 @@ export async function cleanAllEnv() {
 }
 
 export async function startEnv() {
-    await shWithTimeout("cd " + DEV_PATH + " sh start.sh", 100_000)
+    await shWithTimeout("cd " + DEV_PATH + " && sh start.sh", 100_000)
 }
 
-export async function restartAndSyncCkbIndex() {
-    await shWithTimeOutNotErr(" pkill ckb-indexer",1000)
-    await sh("cd " + CKB_DEV_INDEX_PATH + " && rm -rf ckb-test && RUST_LOG=info ./ckb-indexer -s ckb-test > ckb-indexer.log 2>&1 &")
-    await checkCKbIndexSync()
-}
 
 export async function checkCKbIndexSync() {
     let acc1 = generateAccountFromPrivateKey(ACCOUNT_PRIVATE);

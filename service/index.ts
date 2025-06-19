@@ -1,7 +1,7 @@
 import { ScriptWrapper} from "@ckb-lumos/base";
 import fetch from "cross-fetch";
 import { RPC_DEBUG} from "../config/config";
-const RPC_DEBUG_SERVICE = RPC_DEBUG
+const RPC_DEBUG_SERVICE = true
 
 function instanceOfScriptWrapper(object: unknown): object is ScriptWrapper {
     return typeof object === "object" && object != null && "script" in object;

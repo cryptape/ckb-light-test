@@ -21,7 +21,7 @@ jobs:
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn cache dir)"
       - name: Node Cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         id: npm-and-yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
         with:
           path: |
@@ -42,7 +42,7 @@ jobs:
 
       - name: Publish reports
         if: failure()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: jfoa-build-reports-${{ runner.os }}
           path: mochawesome-report/

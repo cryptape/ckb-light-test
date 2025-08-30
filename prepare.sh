@@ -2,6 +2,7 @@ mkdir tmp
 cd tmp
 git clone https://github.com/gpBlockchain/startBlockchain.git
 cd startBlockchain
+git checkout fix-panic-of-holding-matched_blocks
 cd ckbLightClient
 sh prepare.sh
 sh start.sh
